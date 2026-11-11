@@ -1,0 +1,91 @@
+---
+title: "Updates and rollback"
+description: "Preview updates to an installed setup, check readiness, and use the state ledger to inspect rollback coverage."
+---
+
+<span id="preview" />
+
+## Check update readiness
+
+Use the update doctor to check the blueprint and installer checkouts. The full dry run previews the steps before changing files.
+
+In the doctor output, check the checkout paths and branches, sync status, and dirty state. A diverged branch needs review and reconciliation before a fast-forward can work. The dry run lists the actions it would attempt and does not promise those actions will succeed.
+
+A Git submodule normally sits at the commit pinned in the blueprint. If an installer update is blocked because its checkout is detached, review and update the installer pin in the blueprint repository before applying that blueprint revision.
+
+> Commit or stash local changes before updating. Keep force-reset out of the routine path because it discards local changes.
+
+```bash title="Terminal"
+smu update doctor --json
+smu update --all --dry-run --json
+```
+
+<span id="apply" />
+
+## Apply an update
+
+Run the full pipeline to refresh the blueprint, installer, modules, and generated configuration. To update only one part, choose the blueprint, installer, or modules subcommand instead.
+
+The full pipeline updates the blueprint and bundled installer before refreshing modules and generated files. A failure can leave the earlier steps applied, so inspect the output and both checkouts before retrying.
+
+```bash title="Terminal"
+smu update --all
+```
+
+<span id="verify" />
+
+## Verify the update
+
+Run the repository doctor again to check checkout state. Use the general doctor to inspect the active configuration, including conflicts in generated adapter targets.
+
+If an update changed shell or terminal configuration, open a new session and check the tools that use those files before considering the update done.
+
+```bash title="Terminal"
+smu update doctor --json
+smu doctor --json
+```
+
+<span id="rollback" />
+
+## Inspect rollback coverage
+
+The state ledger records module provision batches, uninstall batches, and adapter materialization. A rollback can restore captured adapter files or symlinks, or run the existing uninstall flow for the last module provision batch.
+
+Uninstall events are recorded for audit. Reinstalling removed package state can be lossy, so the ledger does not automatically roll those events back.
+
+The rollback doctor reports recent events and coverage. The JSON preview shows the selected event and the paths or actions it can restore. Check those details before rolling back an event, particularly on a host with locally edited configuration.
+
+```bash title="Terminal"
+smu rollback doctor --json
+smu rollback --json
+```
+
+<span id="update-lock" />
+
+## Understand client update recovery
+
+The client update command uses a lock that records repository revisions, generated file fingerprints, and validation results. The client update rollback path uses that record. The general smu rollback command instead works from state ledger events such as provisioning and adapter writes.
+
+When a client update report shows config drift, compare the generated files with the intended profile before overwriting changes. If using a report destination, check the policy first because report mode can send its payload to a configured endpoint.
+
+<GuideCards links={[{"label":"Troubleshoot a failed update","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."}]} />
+
+<span id="update-sequence" />
+
+## Treat an update as several checkpoints
+
+An update spans more than a Git pull. It can change the blueprint, installer, module sources, and generated configuration. Capture the working revisions and review dirty state first. After updating, inspect the output and run the relevant health checks before using the setup as the new baseline.
+
+When the pipeline stops, read the first failure and determine which earlier steps completed. Re-running a command without understanding that boundary can mix old assumptions with new sources. Preserve the output and checkout state while you diagnose it.
+
+<SetupDiagram diagram={{"title":"Review, update, and verify","actors":["You","Checkouts","Machine"],"steps":[[0,1,"Inspect readiness and revisions"],[1,0,"Review the dry-run actions"],[0,1,"Apply the selected update"],[1,2,"Refresh supported configuration"],[2,0,"Verify tools and generated files"]],"caption":"Updates are not a transaction across every package and repository; earlier completed steps may remain after a failure."}} />
+
+<span id="recovery-boundaries" />
+
+## Know what a rollback cannot restore
+
+Returning a repository to an earlier revision does not automatically uninstall packages or undo arbitrary commands that have already run. Likewise, a ledger rollback only covers the event and paths it reports. Compare the planned recovery with the actual effect you need to reverse.
+
+Keep independent backups for important configuration and user data. Before recovery, preserve new local changes and confirm which paths the operation owns. Check the application again afterwards; a successful rollback command is not proof that every external dependency was restored.
+
+<GuideCards links={[{"label":"Troubleshoot a partial setup","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."}]} />

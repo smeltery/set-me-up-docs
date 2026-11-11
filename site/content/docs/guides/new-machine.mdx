@@ -1,0 +1,64 @@
+---
+title: "Move to a new machine"
+description: "Use your existing blueprint to prepare another computer without copying stale state, credentials, or unsupported assumptions."
+---
+
+<span id="inventory" />
+
+## Inventory the working setup
+
+Start from the machine that works. Save your blueprint changes in the appropriate repositories, including intentional submodule changes, and record the revision you want to reproduce. Keep a list of the applications and configuration that matter most to your daily work.
+
+Do not use the old machine’s home directory as a blind installation recipe. It can contain cached state, machine-specific paths, credentials, and files that were never managed by the blueprint. Identify which settings are versioned and which need a separate migration.
+
+- Record the blueprint remote and revision.
+- Review profile and module choices.
+- List credentials that must be provisioned separately.
+- Back up important personal files independently of setup configuration.
+
+<span id="host" />
+
+## Check the destination platform
+
+Confirm the new machine’s operating system, architecture, package tools, and permissions. A blueprint shared between macOS and Linux can have different module implementations and package names. Discovery across all host buckets does not make a module compatible.
+
+Choose the installation destination before linking dotfiles, then keep that checkout path stable. For a headless Debian or Ubuntu host, follow the VPS guide rather than importing desktop assumptions.
+
+<GuideCards links={[{"label":"Choose profiles","href":"/docs/guides/machine-profiles","icon":"server","description":"Separate built-in machine presets from blueprint profiles so you can preview the right modules and adapter for each host."},{"label":"Prepare a VPS","href":"/docs/guides/vps","icon":"server","description":"Use the VPS setup profile on a headless Debian or Ubuntu machine, including a DigitalOcean Droplet."}]} />
+
+<span id="bootstrap" />
+
+## Install from reviewed sources
+
+Use the same download, inspection, and bootstrap preview procedure as a first installation. Confirm the fork, branch, destination, and submodule scope on this machine. A familiar repository name is not a substitute for reviewing the version being downloaded.
+
+Once installed, use the CLI pinned by the blueprint and check its help output. Run blueprint doctor before applying your normal selection. Preserve the preview output so you can compare what was intended with what was applied.
+
+<SetupDiagram diagram={{"title":"Move intent, then verify on the new host","actors":["Versioned blueprint","New machine","Verification"],"steps":[[0,1,"Install the reviewed checkout"],[1,1,"Discover and preflight compatible modules"],[1,2,"Apply a small baseline"],[2,0,"Record intentional platform differences"]],"caption":"Reproduce versioned configuration; migrate private data and credentials through their own processes."}} />
+
+```bash title="Terminal"
+smu blueprint doctor --strict --json
+smu --list-modules
+```
+
+<span id="dotfiles" />
+
+## Adopt configuration without losing local files
+
+Inspect files already present on the new machine before applying links. An application may have created useful defaults or a credential-bearing file. Compare the destination with the blueprint source and back it up before allowing replacement.
+
+Preview the rcm link plan, apply only after review, and inspect a representative link. Then start the consuming application in a new session. This catches missing executables and host-specific paths that a link check alone cannot detect.
+
+```bash title="Terminal"
+smu --lsrc
+```
+
+<span id="acceptance" />
+
+## Decide when the new machine is ready
+
+Verify a short list of real tasks: open a fresh shell, run your editor, access the intended repositories, and use the applications that depend on your configuration. Test with the account and permissions you will actually use.
+
+Keep the old machine or its backup available until this checklist passes. Commit intentional fixes back to the blueprint so that the next installation benefits from what you learned. Leave credentials, caches, and temporary work out of those commits.
+
+<GuideCards links={[{"label":"Verify and maintain the setup","href":"/docs/guides/setup-routine","icon":"up","description":"Turn a successful first installation into a small review, apply, and verify workflow you can run again with confidence."}]} />

@@ -1,0 +1,61 @@
+---
+title: "Plan a fleet of hosts"
+description: "Review a consistent set of per-host smu plans before making changes across multiple machines."
+---
+
+<span id="goal" />
+
+## Pick the hosts and profile first
+
+Use fleet planning when you maintain multiple hosts and want to review which plan each host would run. Group similar machines together so each command uses the intended profile and provisioning adapter. Keep a staging or test host separate from the rest.
+
+Check the built-in profile and the adapter requirements on each host family. For the VPS example, use Debian or Ubuntu hosts that already have smu available to their SSH user.
+
+<GuideCards links={[{"label":"Choose a machine profile","href":"/docs/guides/machine-profiles","icon":"server","description":"Separate built-in machine presets from blueprint profiles so you can preview the right modules and adapter for each host."},{"label":"Prepare a headless VPS","href":"/docs/guides/vps","icon":"terminal","description":"Use the VPS setup profile on a headless Debian or Ubuntu machine, including a DigitalOcean Droplet."}]} />
+
+<span id="hosts" />
+
+## Write the host list explicitly
+
+Use one host per line followed by its SSH user. Blank lines and lines beginning with # are ignored. The examples below are placeholders. Replace them with the names and users you intend to check.
+
+Always supply the user. A line without a user defaults to root. If the file is missing, smu generates a localhost entry, so check the host count and names before relying on the plan.
+
+```text title="hosts.txt"
+staging.example.test deploy
+worker-01.example.test deploy
+```
+
+<span id="preview" />
+
+## Review the generated commands
+
+Fleet plan builds a report locally. Each command entry identifies a host, user, proposed smu plan command, and path for a possible log. Compare the commands with your intended SSH targets and confirm the provisioning adapter is valid for those hosts.
+
+This example specifies rcm explicitly so the plan does not inherit the controller’s configured adapter. Substitute the adapter you intend to check.
+
+```bash title="Terminal"
+smu fleet plan --hosts hosts.txt --profile vps --provisioning-adapter rcm --json
+```
+
+<span id="dry-run" />
+
+## Check the remote execution inputs
+
+The dry run reports the apply request without opening SSH sessions. In the JSON, verify the commands, run ID, and executes_remote value. The generated command is smu plan, a read-only description of what the host’s setup would do.
+
+For an actual remote plan collection, the SSH user needs key-based access, a trusted host key, and smu on the noninteractive PATH. Check a single host first and review its output before extending the host list.
+
+```bash title="Terminal"
+smu fleet apply --hosts hosts.txt --profile vps --provisioning-adapter rcm --dry-run --json
+```
+
+<span id="after" />
+
+## Review results before provisioning
+
+Use the plan output to check the expected modules, secrets findings, dotfile conflicts, and rollback coverage for each machine. Resolve failures on the affected host. A missing smu in a noninteractive session calls for a PATH check, and an SSH failure calls for reviewing the hostname, user, and credentials.
+
+Apply the appropriate setup or adapter command on each host only after reviewing its plan. Start on the staging host, verify the packages or application that changed, and carry the same checks to the next host.
+
+<GuideCards links={[{"label":"Diagnose a host","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."},{"label":"Check plan and trust findings","href":"/docs/reference/trust","icon":"shell","description":"Review the sources and proposed system changes before installing a blueprint or applying a module."}]} />

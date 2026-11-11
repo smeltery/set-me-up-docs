@@ -1,0 +1,82 @@
+---
+title: "Author a module"
+description: "Add a small reusable task to your blueprint, declare what it changes, and check it on the right host before provisioning."
+---
+
+<span id="pick-payload" />
+
+## Pick the smallest payload
+
+Choose a module when you need to install packages or run a task independently of your other setup. Start with a package list when that expresses the whole job. Use a script for behavior that needs logic, and attach a manifest to document trust and declare implementations for additional adapters.
+
+| Payload | Use it for |
+| --- | --- |
+| brewfile | Homebrew bundles on hosts with Homebrew. |
+| packages | Package lists for Debian-based hosts. |
+| &lt;module-name&gt;.sh | Shell-driven setup. |
+| module.toml | Trust metadata and adapter implementations. |
+
+<span id="choose-location" />
+
+## Choose a host bucket and name
+
+Put shared modules in dotfiles/modules/universal and host-specific modules in macos, debian, or arch under dotfiles/modules. Give the script the same basename as its directory. This example uses the universal module name local-check and prints a single line as its smoke test.
+
+The module name accepted by smu is relative to its host bucket. If you use a nested location such as universal/editor/local-check, use editor/local-check when calling smu.
+
+```bash title="dotfiles/modules/universal/local-check/local-check.sh"
+#!/usr/bin/env bash
+set -euo pipefail
+
+printf '%s\n' 'local-check module ran'
+```
+
+<span id="describe-behavior" />
+
+## Describe side effects in the manifest
+
+Save this manifest beside the script. Match network, sudo, and write declarations to what the module actually does. The example script prints a message and has no uninstall script, so its rollback classification is manual.
+
+When a script module does install files, keep repeated runs predictable. Check whether a change is already in place before writing it, quote paths, and handle failures explicitly. Add a &lt;module-name&gt;.uninstall.sh only when you can reverse the specific changes the module owns.
+
+```toml title="dotfiles/modules/universal/local-check/module.toml"
+id = "local-check"
+trust = "first-party"
+network = false
+requires_sudo = false
+writes = []
+rollback = "manual"
+```
+
+<span id="hooks" />
+
+## Use script hooks for separate steps
+
+A script module can have before.sh and after.sh in the same directory. Keep hooks small and review them along with the module. The installer runs each hook and the module script in its own Bash process, so shared inputs should come from explicit files or environment variables available to all three processes.
+
+<span id="validate" />
+
+## Check discovery and review the plan
+
+Run from the installed blueprint. Check the script’s syntax, confirm the module is visible, and read its trust report and plan. A shell script can perform behavior the plan cannot infer from its contents, so read the script and hooks even if the plan looks routine.
+
+```bash title="Terminal"
+bash -n dotfiles/modules/universal/local-check/local-check.sh
+smu --list-modules --search local-check
+smu trust doctor local-check --json
+smu diff local-check
+```
+
+<span id="run" />
+
+## Run the module on a test machine
+
+Use a disposable test environment or an appropriate test machine for a module that changes the host. This command selects the new module and skips the base setup. For the example, expect the line local-check module ran.
+
+After the test, run it again and compare the result. If you add the module to a blueprint profile, rerun that profile’s adapter preflight to check the combined set.
+
+```bash title="Terminal"
+smu --provision --no-base --modules local-check
+```
+
+<GuideCards links={[{"label":"Select and apply modules","href":"/docs/guides/modules","icon":"terminal","description":"Discover modules in your blueprint, inspect what they do, and apply the subset you need."},{"label":"Compose a blueprint profile","href":"/docs/guides/machine-profiles","icon":"server","description":"Separate built-in machine presets from blueprint profiles so you can preview the right modules and adapter for each host."}]} />

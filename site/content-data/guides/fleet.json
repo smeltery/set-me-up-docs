@@ -1,0 +1,79 @@
+{
+  "path": "/docs/guides/fleet",
+  "title": "Plan a fleet of hosts",
+  "group": "Operations",
+  "order": 11,
+  "description": "Review a consistent set of per-host smu plans before making changes across multiple machines.",
+  "sections": [
+    {
+      "id": "goal",
+      "title": "Pick the hosts and profile first",
+      "paragraphs": [
+        "Use fleet planning when you maintain multiple hosts and want to review which plan each host would run. Group similar machines together so each command uses the intended profile and provisioning adapter. Keep a staging or test host separate from the rest.",
+        "Check the built-in profile and the adapter requirements on each host family. For the VPS example, use Debian or Ubuntu hosts that already have smu available to their SSH user."
+      ],
+      "links": [
+        {
+          "label": "Choose a machine profile",
+          "href": "/docs/guides/machine-profiles",
+          "icon": "server"
+        },
+        {
+          "label": "Prepare a headless VPS",
+          "href": "/docs/guides/vps",
+          "icon": "terminal"
+        }
+      ]
+    },
+    {
+      "id": "hosts",
+      "title": "Write the host list explicitly",
+      "paragraphs": [
+        "Use one host per line followed by its SSH user. Blank lines and lines beginning with # are ignored. The examples below are placeholders. Replace them with the names and users you intend to check.",
+        "Always supply the user. A line without a user defaults to root. If the file is missing, smu generates a localhost entry, so check the host count and names before relying on the plan."
+      ],
+      "language": "hosts.txt",
+      "code": "staging.example.test deploy\nworker-01.example.test deploy"
+    },
+    {
+      "id": "preview",
+      "title": "Review the generated commands",
+      "paragraphs": [
+        "Fleet plan builds a report locally. Each command entry identifies a host, user, proposed smu plan command, and path for a possible log. Compare the commands with your intended SSH targets and confirm the provisioning adapter is valid for those hosts.",
+        "This example specifies rcm explicitly so the plan does not inherit the controller’s configured adapter. Substitute the adapter you intend to check."
+      ],
+      "language": "Terminal",
+      "code": "smu fleet plan --hosts hosts.txt --profile vps --provisioning-adapter rcm --json"
+    },
+    {
+      "id": "dry-run",
+      "title": "Check the remote execution inputs",
+      "paragraphs": [
+        "The dry run reports the apply request without opening SSH sessions. In the JSON, verify the commands, run ID, and executes_remote value. The generated command is smu plan, a read-only description of what the host’s setup would do.",
+        "For an actual remote plan collection, the SSH user needs key-based access, a trusted host key, and smu on the noninteractive PATH. Check a single host first and review its output before extending the host list."
+      ],
+      "language": "Terminal",
+      "code": "smu fleet apply --hosts hosts.txt --profile vps --provisioning-adapter rcm --dry-run --json"
+    },
+    {
+      "id": "after",
+      "title": "Review results before provisioning",
+      "paragraphs": [
+        "Use the plan output to check the expected modules, secrets findings, dotfile conflicts, and rollback coverage for each machine. Resolve failures on the affected host. A missing smu in a noninteractive session calls for a PATH check, and an SSH failure calls for reviewing the hostname, user, and credentials.",
+        "Apply the appropriate setup or adapter command on each host only after reviewing its plan. Start on the staging host, verify the packages or application that changed, and carry the same checks to the next host."
+      ],
+      "links": [
+        {
+          "label": "Diagnose a host",
+          "href": "/docs/guides/troubleshooting",
+          "icon": "terminal"
+        },
+        {
+          "label": "Check plan and trust findings",
+          "href": "/docs/reference/trust",
+          "icon": "shell"
+        }
+      ]
+    }
+  ]
+}

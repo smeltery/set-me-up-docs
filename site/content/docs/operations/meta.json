@@ -1,0 +1,11 @@
+{
+  "title": "Operations",
+  "pages": [
+    "[Operations](/docs/operations)",
+    "[Headless VPS](/docs/guides/vps)",
+    "[Updates and rollback](/docs/guides/updates)",
+    "[Setup routine](/docs/guides/setup-routine)",
+    "[Troubleshooting](/docs/guides/troubleshooting)",
+    "[Fleet of hosts](/docs/guides/fleet)"
+  ]
+}

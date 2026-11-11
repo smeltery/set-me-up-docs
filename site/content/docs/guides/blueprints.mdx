@@ -1,0 +1,87 @@
+---
+title: "Blueprints"
+description: "A blueprint is the Git repository that describes your setup. Fork the template and keep machine configuration under version control."
+---
+
+<span id="layout" />
+
+## Blueprint layout
+
+The set-me-up blueprint template ships example dotfiles, a custom module, and the entry point that delegates to the installer.
+
+Fork the template so the branch you install points to configuration you control. A blueprint is the configuration and checkout manifest. The installer submodule provides the CLI, and shared module repositories supply work the blueprint can reuse.
+
+| Path | Purpose |
+| --- | --- |
+| smu.toml | Choose the provisioning adapter and profile modules. |
+| dotfiles/tag-example/ | Start from an example rcm tag. |
+| dotfiles/rcrc | Choose rcm dotfile directories and behavior. |
+| dotfiles/modules/example/ | Start from an example custom module. |
+| dotfiles/modules/install.sh | Bootstrap the chosen blueprint. |
+| .gitmodules | Declare the installer and shared module checkouts. |
+
+<span id="profiles" />
+
+## Pick a provisioning adapter
+
+A profile lists modules for a setup. This example selects the traditional rcm adapter and the module shipped in the blueprint template.
+
+The global provisioning setting picks the default adapter. A named profile can select its own modules and override that adapter. Use the exact module names in the checkout and validate the profile on a host it is meant to support.
+
+```toml title="smu.toml"
+[provisioning]
+adapter = "rcm"
+
+[profile.default]
+modules = ["example"]
+```
+
+<GuideCards links={[{"label":"Provisioning adapters","href":"/docs/reference/adapters","icon":"shell","description":"Provisioning adapters determine how smu applies a blueprint. Choose one for the host and the capabilities published by its modules."}]} />
+
+<span id="verify" />
+
+## Validate the blueprint
+
+Use the bundled CLI from Quick start. The blueprint doctor checks the repository and configuration, and adapter preflight checks whether the selected modules can be handled by the adapter on this host.
+
+The example assumes the stock rcm profile. For a different blueprint, substitute its configured adapter and profile. If preflight reports a missing module, check the name and whether its submodule was initialized. A missing adapter means the selected module needs an implementation for that adapter.
+
+```bash title="Terminal"
+smu blueprint doctor --strict --json
+smu provisioning-adapter preflight --adapter rcm --profile default --json
+```
+
+<span id="track-changes" />
+
+## Track what changes
+
+Keep your customizations in your fork and review upstream changes before updating. Keep machine secrets out of version control. The installer fast-forwards a clean existing checkout and refuses to update a dirty one by default.
+
+Review a pull request as you would a code change. Check the scripts, package list, expected writes, and any submodule revision changes. For an rcm setup, keep the checkout at its original path after symlinking dotfiles.
+
+<GuideCards links={[{"label":"Install the fork","href":"/docs/quick-start","icon":"terminal","description":"Set up your first machine. Choose a blueprint, review the bootstrap, verify the installed CLI, and try one module."},{"label":"Update a setup","href":"/docs/guides/updates","icon":"up","description":"Preview updates to an installed setup, check readiness, and use the state ledger to inspect rollback coverage."},{"label":"Customize dotfiles","href":"/docs/guides/dotfiles","icon":"folder","description":"Use rcm tags to choose which configuration files a blueprint links into your home directory."},{"label":"Author a module","href":"/docs/guides/author-a-module","icon":"shell","description":"Add a small reusable task to your blueprint, declare what it changes, and check it on the right host before provisioning."}]} />
+
+<span id="ownership" />
+
+## Understand what each repository owns
+
+Your blueprint records the configuration you intend to use. The bundled installer interprets that configuration and provides smu. Shared module repositories contain implementations that can evolve independently. Keeping these responsibilities separate makes it possible to review a module update without confusing it with a change to your own dotfiles.
+
+A submodule reference records a commit, not a promise to follow the latest upstream branch. Review both the reference change in the blueprint and the code at the new commit. Commit your own changes in the repository that owns those files; committing only the parent repository does not save uncommitted edits inside a submodule.
+
+<SetupDiagram diagram={{"title":"From versioned intent to applied setup","actors":["Blueprint","Installer","Modules"],"steps":[[0,1,"Provide configuration and pinned sources"],[1,2,"Resolve selected implementations"],[2,1,"Report execution results"],[1,0,"Record the applied setup event"]],"caption":"The blueprint owns your choices; the installer and module checkouts supply their implementations."}} />
+
+<span id="review-checklist" />
+
+## Review a blueprint change before installing it
+
+Read a change in terms of what it will do on a machine. A small profile edit can select a large package collection, and a short submodule reference update can contain many script changes. Compare the target machine, adapter, module selection, and destination paths before treating a diff as routine.
+
+Keep changes focused enough to test on one host. Add one module or dotfile tag, preview its effects, and verify the application that consumes it. This produces a useful checkpoint before you expand the setup to another machine.
+
+- Inspect changed scripts and hooks, not only configuration values.
+- Check package sources, privilege requirements, and writes outside the checkout.
+- Keep secrets and machine-specific credentials out of commits.
+- Run blueprint doctor and the applicable adapter preflight on the target host.
+
+<GuideCards links={[{"label":"Review a plan","href":"/docs/guides/review-a-plan","icon":"folder","description":"Read a plan as a review of sources, module selection, conflicts, and expected writes before applying a setup."}]} />

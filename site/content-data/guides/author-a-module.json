@@ -1,0 +1,81 @@
+{
+  "path": "/docs/guides/author-a-module",
+  "title": "Author a module",
+  "group": "Guides",
+  "order": 6,
+  "description": "Add a small reusable task to your blueprint, declare what it changes, and check it on the right host before provisioning.",
+  "sections": [
+    {
+      "id": "pick-payload",
+      "title": "Pick the smallest payload",
+      "paragraphs": [
+        "Choose a module when you need to install packages or run a task independently of your other setup. Start with a package list when that expresses the whole job. Use a script for behavior that needs logic, and attach a manifest to document trust and declare implementations for additional adapters."
+      ],
+      "table": [
+        ["Payload", "Use it for"],
+        ["brewfile", "Homebrew bundles on hosts with Homebrew."],
+        ["packages", "Package lists for Debian-based hosts."],
+        ["<module-name>.sh", "Shell-driven setup."],
+        ["module.toml", "Trust metadata and adapter implementations."]
+      ]
+    },
+    {
+      "id": "choose-location",
+      "title": "Choose a host bucket and name",
+      "paragraphs": [
+        "Put shared modules in dotfiles/modules/universal and host-specific modules in macos, debian, or arch under dotfiles/modules. Give the script the same basename as its directory. This example uses the universal module name local-check and prints a single line as its smoke test.",
+        "The module name accepted by smu is relative to its host bucket. If you use a nested location such as universal/editor/local-check, use editor/local-check when calling smu."
+      ],
+      "language": "dotfiles/modules/universal/local-check/local-check.sh",
+      "code": "#!/usr/bin/env bash\nset -euo pipefail\n\nprintf '%s\\n' 'local-check module ran'"
+    },
+    {
+      "id": "describe-behavior",
+      "title": "Describe side effects in the manifest",
+      "paragraphs": [
+        "Save this manifest beside the script. Match network, sudo, and write declarations to what the module actually does. The example script prints a message and has no uninstall script, so its rollback classification is manual.",
+        "When a script module does install files, keep repeated runs predictable. Check whether a change is already in place before writing it, quote paths, and handle failures explicitly. Add a <module-name>.uninstall.sh only when you can reverse the specific changes the module owns."
+      ],
+      "language": "dotfiles/modules/universal/local-check/module.toml",
+      "code": "id = \"local-check\"\ntrust = \"first-party\"\nnetwork = false\nrequires_sudo = false\nwrites = []\nrollback = \"manual\""
+    },
+    {
+      "id": "hooks",
+      "title": "Use script hooks for separate steps",
+      "paragraphs": [
+        "A script module can have before.sh and after.sh in the same directory. Keep hooks small and review them along with the module. The installer runs each hook and the module script in its own Bash process, so shared inputs should come from explicit files or environment variables available to all three processes."
+      ]
+    },
+    {
+      "id": "validate",
+      "title": "Check discovery and review the plan",
+      "paragraphs": [
+        "Run from the installed blueprint. Check the script’s syntax, confirm the module is visible, and read its trust report and plan. A shell script can perform behavior the plan cannot infer from its contents, so read the script and hooks even if the plan looks routine."
+      ],
+      "language": "Terminal",
+      "code": "bash -n dotfiles/modules/universal/local-check/local-check.sh\nsmu --list-modules --search local-check\nsmu trust doctor local-check --json\nsmu diff local-check"
+    },
+    {
+      "id": "run",
+      "title": "Run the module on a test machine",
+      "paragraphs": [
+        "Use a disposable test environment or an appropriate test machine for a module that changes the host. This command selects the new module and skips the base setup. For the example, expect the line local-check module ran.",
+        "After the test, run it again and compare the result. If you add the module to a blueprint profile, rerun that profile’s adapter preflight to check the combined set."
+      ],
+      "language": "Terminal",
+      "code": "smu --provision --no-base --modules local-check",
+      "links": [
+        {
+          "label": "Select and apply modules",
+          "href": "/docs/guides/modules",
+          "icon": "terminal"
+        },
+        {
+          "label": "Compose a blueprint profile",
+          "href": "/docs/guides/machine-profiles",
+          "icon": "server"
+        }
+      ]
+    }
+  ]
+}

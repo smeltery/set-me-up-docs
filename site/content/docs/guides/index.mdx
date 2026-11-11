@@ -1,0 +1,28 @@
+---
+title: "Guides"
+description: "Learn how to build, review, and adapt a repeatable setup from the files and modules in your blueprint."
+---
+
+<span id="build" />
+
+## Build your setup
+
+Start by understanding where configuration lives and how the installer resolves module implementations. These guides take you from a blueprint fork to a small, reviewed setup you can verify on one machine.
+
+<GuideCards links={[{"label":"Blueprints","href":"/docs/guides/blueprints","icon":"folder","description":"A blueprint is the Git repository that describes your setup. Fork the template and keep machine configuration under version control."},{"label":"Modules","href":"/docs/guides/modules","icon":"shell","description":"Discover modules in your blueprint, inspect what they do, and apply the subset you need."},{"label":"Review a setup plan","href":"/docs/guides/review-a-plan","icon":"terminal","description":"Read a plan as a review of sources, module selection, conflicts, and expected writes before applying a setup."}]} />
+
+<span id="customize" />
+
+## Customize the pieces
+
+Bring your own dotfiles, add a focused module, and separate the responsibilities of your machines. Keep preferences and platform differences explicit so you can review them before the next installation.
+
+<GuideCards links={[{"label":"Organize and link dotfiles","href":"/docs/guides/dotfiles","icon":"folder","description":"Use rcm tags to choose which configuration files a blueprint links into your home directory."},{"label":"Author a module","href":"/docs/guides/author-a-module","icon":"shell","description":"Add a small reusable task to your blueprint, declare what it changes, and check it on the right host before provisioning."},{"label":"Choose machine profiles","href":"/docs/guides/machine-profiles","icon":"server","description":"Separate built-in machine presets from blueprint profiles so you can preview the right modules and adapter for each host."},{"label":"Customize themes and prompts","href":"/docs/guides/themes-and-prompts","icon":"terminal","description":"Choose a color theme and shell prompt, see what controls the effective profile, and apply the choice to supported tools."}]} />
+
+<span id="adapt" />
+
+## Adapt an existing setup
+
+Recheck coverage when changing adapters or moving to a new host. A versioned blueprint makes your intent portable; the new environment still needs its own compatibility and acceptance checks.
+
+<GuideCards links={[{"label":"Migrate toward Nix","href":"/docs/guides/nix-migration","icon":"up","description":"Test a hybrid blueprint alongside an existing rcm setup and use coverage reports to decide which modules can move to Nix."},{"label":"Move to a new machine","href":"/docs/guides/new-machine","icon":"server","description":"Use your existing blueprint to prepare another computer without copying stale state, credentials, or unsupported assumptions."}]} />

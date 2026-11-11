@@ -9,8 +9,9 @@ or tests repositories that own it.
 
 ## Where To Add Things
 
-- Update `README.md` for user-facing setup, provisioning, trust, and adapter
-  guidance.
+- Keep `README.md` high-level; route readers through `docs/README.md`.
+- Author user guides in `site/content-data/` and regenerate MDX with
+  `bun run --cwd site generate:content`.
 - Update generated or static documentation assets only when the documented
   behavior has changed in an owning repository.
 - Do not change sibling repositories from this checkout unless the routed task
@@ -34,15 +35,18 @@ scripts/validate.sh --links
 scripts/validate.sh --mermaid
 ```
 
-Install Node dependencies before mermaid validation:
+Install locked Bun dependencies before mermaid validation:
 
 ```bash
-npm ci
+bun install --frozen-lockfile
+bun install --cwd site --frozen-lockfile
 ```
 
 GitHub Actions runs markdown lint, ShellCheck, structure checks, link
 validation, mermaid diagram validation, and the full native validator on every
-push and pull request.
+push and pull request. It also checks workflow syntax, authored file line
+budgets, and the full documentation application. Pre-commit uses the same
+`scripts/validate.sh --all` entrypoint.
 
 ## Git
 

@@ -1,0 +1,89 @@
+{
+  "path": "/docs/guides/new-machine",
+  "title": "Move to a new machine",
+  "description": "Use your existing blueprint to prepare another computer without copying stale state, credentials, or unsupported assumptions.",
+  "group": "Guides",
+  "order": 10,
+  "sections": [
+    {
+      "id": "inventory",
+      "title": "Inventory the working setup",
+      "paragraphs": [
+        "Start from the machine that works. Save your blueprint changes in the appropriate repositories, including intentional submodule changes, and record the revision you want to reproduce. Keep a list of the applications and configuration that matter most to your daily work.",
+        "Do not use the old machine’s home directory as a blind installation recipe. It can contain cached state, machine-specific paths, credentials, and files that were never managed by the blueprint. Identify which settings are versioned and which need a separate migration."
+      ],
+      "items": [
+        "Record the blueprint remote and revision.",
+        "Review profile and module choices.",
+        "List credentials that must be provisioned separately.",
+        "Back up important personal files independently of setup configuration."
+      ]
+    },
+    {
+      "id": "host",
+      "title": "Check the destination platform",
+      "paragraphs": [
+        "Confirm the new machine’s operating system, architecture, package tools, and permissions. A blueprint shared between macOS and Linux can have different module implementations and package names. Discovery across all host buckets does not make a module compatible.",
+        "Choose the installation destination before linking dotfiles, then keep that checkout path stable. For a headless Debian or Ubuntu host, follow the VPS guide rather than importing desktop assumptions."
+      ],
+      "links": [
+        {
+          "label": "Choose profiles",
+          "href": "/docs/guides/machine-profiles",
+          "icon": "server"
+        },
+        {
+          "label": "Prepare a VPS",
+          "href": "/docs/guides/vps",
+          "icon": "server"
+        }
+      ]
+    },
+    {
+      "id": "bootstrap",
+      "title": "Install from reviewed sources",
+      "paragraphs": [
+        "Use the same download, inspection, and bootstrap preview procedure as a first installation. Confirm the fork, branch, destination, and submodule scope on this machine. A familiar repository name is not a substitute for reviewing the version being downloaded.",
+        "Once installed, use the CLI pinned by the blueprint and check its help output. Run blueprint doctor before applying your normal selection. Preserve the preview output so you can compare what was intended with what was applied."
+      ],
+      "code": "smu blueprint doctor --strict --json\nsmu --list-modules",
+      "language": "Terminal",
+      "diagram": {
+        "title": "Move intent, then verify on the new host",
+        "actors": ["Versioned blueprint", "New machine", "Verification"],
+        "steps": [
+          [0, 1, "Install the reviewed checkout"],
+          [1, 1, "Discover and preflight compatible modules"],
+          [1, 2, "Apply a small baseline"],
+          [2, 0, "Record intentional platform differences"]
+        ],
+        "caption": "Reproduce versioned configuration; migrate private data and credentials through their own processes."
+      }
+    },
+    {
+      "id": "dotfiles",
+      "title": "Adopt configuration without losing local files",
+      "paragraphs": [
+        "Inspect files already present on the new machine before applying links. An application may have created useful defaults or a credential-bearing file. Compare the destination with the blueprint source and back it up before allowing replacement.",
+        "Preview the rcm link plan, apply only after review, and inspect a representative link. Then start the consuming application in a new session. This catches missing executables and host-specific paths that a link check alone cannot detect."
+      ],
+      "code": "smu --lsrc",
+      "language": "Terminal"
+    },
+    {
+      "id": "acceptance",
+      "title": "Decide when the new machine is ready",
+      "paragraphs": [
+        "Verify a short list of real tasks: open a fresh shell, run your editor, access the intended repositories, and use the applications that depend on your configuration. Test with the account and permissions you will actually use.",
+        "Keep the old machine or its backup available until this checklist passes. Commit intentional fixes back to the blueprint so that the next installation benefits from what you learned. Leave credentials, caches, and temporary work out of those commits."
+      ],
+      "links": [
+        {
+          "label": "Verify and maintain the setup",
+          "href": "/docs/guides/setup-routine",
+          "icon": "up"
+        }
+      ]
+    }
+  ]
+}

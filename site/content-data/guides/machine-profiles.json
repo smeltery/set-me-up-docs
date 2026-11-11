@@ -1,0 +1,115 @@
+{
+  "path": "/docs/guides/machine-profiles",
+  "title": "Choose machine profiles",
+  "group": "Guides",
+  "order": 7,
+  "description": "Separate built-in machine presets from blueprint profiles so you can preview the right modules and adapter for each host.",
+  "sections": [
+    {
+      "id": "two-kinds",
+      "title": "Two kinds of profile",
+      "paragraphs": [
+        "A built-in machine profile is a preset defined by smu. It describes a machine role, default modules and adapter, submodule scope, and safety defaults. A blueprint profile is a named table in your own smu.toml. It lets you version module selections and adapter overrides alongside your dotfiles."
+      ],
+      "table": [
+        ["Task", "Command"],
+        ["Inspect a built-in role", "smu machine-profile show vps --json"],
+        ["Plan using a built-in role", "smu plan --machine vps --json"],
+        [
+          "Preflight a named blueprint profile",
+          "smu provisioning-adapter preflight --profile lab --json"
+        ]
+      ]
+    },
+    {
+      "id": "inspect",
+      "title": "Inspect the available presets",
+      "paragraphs": [
+        "Use the list command to get the IDs shipped with your installed version. The show command includes the proposed module list and safety settings. Pick the role closest to the host and confirm its modules are available in your blueprint. The built-in vps, ci, and agent-host setup paths require Debian-based systems."
+      ],
+      "language": "Terminal",
+      "code": "smu machine-profile list --json\nsmu machine-profile show vps --json"
+    },
+    {
+      "id": "plan-role",
+      "title": "Preview a built-in role on the host",
+      "paragraphs": [
+        "Run the plan on the machine you intend to configure. A machine preset supplies an adapter default to the plan, and the --provisioning-adapter option lets you compare another choice. For example, inspect the same Debian VPS modules with the rcm adapter used by a traditional blueprint.",
+        "In the result, review provisioning.modules and provisioning.adapter, then look at dotfile conflicts, secret findings, trust warnings, and rollback coverage. Treat the plan as a review artifact before running the actual setup."
+      ],
+      "language": "Terminal",
+      "code": "smu plan --machine vps --provisioning-adapter rcm --json",
+      "links": [
+        {
+          "label": "Set up a Debian or Ubuntu VPS",
+          "href": "/docs/guides/vps",
+          "icon": "server"
+        }
+      ]
+    },
+    {
+      "id": "compose",
+      "title": "Keep a custom profile in the blueprint",
+      "paragraphs": [
+        "Add a profile for a repeatable combination of modules. This example keeps the stock blueprint’s example module in the default profile and creates a lab profile with the same module. Once it works, add modules that your own lab needs.",
+        "Choose the module names from smu --list-modules on the target host. A profile can override the global adapter, so keep its module set compatible with that adapter."
+      ],
+      "language": "smu.toml",
+      "code": "[provisioning]\nadapter = \"rcm\"\n\n[profile.default]\nmodules = [\"example\"]\n\n[profile.lab]\nadapter = \"rcm\"\nmodules = [\"example\"]"
+    },
+    {
+      "id": "preflight",
+      "title": "Validate the custom profile",
+      "paragraphs": [
+        "Preflight with the same profile name you will use when applying the adapter. Check the module coverage and the proposed command. An unknown built-in role from smu machine-profile show indicates that you passed an ID outside the built-in list. Use the adapter preflight’s --profile argument for names declared in smu.toml."
+      ],
+      "language": "Terminal",
+      "code": "smu provisioning-adapter preflight --adapter rcm --profile lab --json",
+      "links": [
+        {
+          "label": "Provisioning adapters",
+          "href": "/docs/reference/adapters",
+          "icon": "shell"
+        },
+        {
+          "label": "Manage a blueprint fork",
+          "href": "/docs/guides/blueprints",
+          "icon": "folder"
+        }
+      ]
+    },
+    {
+      "id": "design-profiles",
+      "title": "Design profiles around machine responsibilities",
+      "paragraphs": [
+        "A profile should explain why a group of modules belongs together. A workstation may need interactive tools and application preferences; a headless server should avoid desktop assumptions. Reusing a module across both roles is appropriate only when its implementation supports both environments.",
+        "Prefer a small shared baseline and explicit role-specific additions. Keep the profile in the blueprint so reviewers can see how a module-selection change affects each machine. Names such as lab are examples from your configuration, not built-in smu machine IDs."
+      ],
+      "diagram": {
+        "title": "Choose the role, then validate its implementation",
+        "actors": ["Machine role", "Blueprint profile", "Adapter preflight"],
+        "steps": [
+          [0, 1, "Select the intended module set"],
+          [1, 2, "Check adapter coverage on this host"],
+          [2, 0, "Review readiness before applying"]
+        ],
+        "caption": "Built-in presets and named blueprint profiles are distinct inputs; validate the choice you actually intend to apply."
+      }
+    },
+    {
+      "id": "new-host-review",
+      "title": "Review a profile again on a different host",
+      "paragraphs": [
+        "A configuration that works on one computer is evidence about that computer. Operating-system packages, architecture, permissions, and existing files can differ on the next host. Run discovery and preflight there instead of assuming that a shared profile makes the environment identical.",
+        "If a module is unavailable, confirm its checkout and supported host bucket before substituting another one. Record intentional platform differences in configuration rather than making unexplained local edits."
+      ],
+      "links": [
+        {
+          "label": "Prepare a new machine",
+          "href": "/docs/guides/new-machine",
+          "icon": "server"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Guides",
+  "pages": [
+    "[Guides](/docs/guides)",
+    "[Blueprints](/docs/guides/blueprints)",
+    "[Modules](/docs/guides/modules)",
+    "[Review a plan](/docs/guides/review-a-plan)",
+    "[Dotfiles](/docs/guides/dotfiles)",
+    "[Author a module](/docs/guides/author-a-module)",
+    "[Machine profiles](/docs/guides/machine-profiles)",
+    "[Themes and prompts](/docs/guides/themes-and-prompts)",
+    "[Migrate to Nix](/docs/guides/nix-migration)",
+    "[New machine](/docs/guides/new-machine)"
+  ]
+}

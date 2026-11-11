@@ -1,0 +1,66 @@
+---
+title: "Migrate a blueprint toward Nix"
+description: "Test a hybrid blueprint alongside an existing rcm setup and use coverage reports to decide which modules can move to Nix."
+---
+
+<span id="start" />
+
+## Start with a working rcm blueprint
+
+A hybrid setup is useful when some modules already have a Nix implementation and others still rely on shell scripts or package lists. Begin from a working blueprint, record the modules you expect to keep, and make the migration on a Git branch or a separate test checkout.
+
+Install the Nix tooling required by your chosen adapter before testing the apply step. Home Manager manages user-level configuration, nix-darwin manages macOS system configuration, and the nixos adapter expects a NixOS host.
+
+<GuideCards links={[{"label":"Compare adapter support","href":"/docs/reference/adapters","icon":"shell","description":"Provisioning adapters determine how smu applies a blueprint. Choose one for the host and the capabilities published by its modules."}]} />
+
+<span id="coverage" />
+
+## Compare coverage before editing
+
+Run the migration comparison for the blueprint profile you want to move. It classifies modules as ported, partial, blocked, or kept-rcm. Use the module-level results to choose a small first batch and note any modules that need a new implementation.
+
+Keep a copy of the current report so you can compare it after changing manifests or module selections.
+
+```bash title="Terminal"
+smu nix migrate compare --profile default --json
+```
+
+<span id="draft-config" />
+
+## Generate a separate starter configuration
+
+Write the migration output to a fresh file in your test checkout. This creates a starter configuration so you can review it without overwriting your current smu.toml. Compare the files and carry over the existing profile module lists and any settings you still need.
+
+The hybrid example uses Home Manager for supported modules and allows rcm fallback for the remaining modules. Merge that adapter selection into the reviewed blueprint configuration before preflighting it.
+
+```bash title="Terminal"
+smu blueprint migrate --from rcm --to hybrid --output smu.hybrid.toml --json
+git diff --no-index smu.toml smu.hybrid.toml
+```
+
+<span id="hybrid-preflight" />
+
+## Preflight the merged configuration
+
+After merging the starter settings into your test checkout’s smu.toml, run the blueprint doctor and adapter preflight. Review the generated artifacts, required commands, unsupported modules, and fallback decisions. Run with SMU_HOME_DIR pointing at your test blueprint if your usual checkout is elsewhere.
+
+If a module falls back to rcm, decide whether that is acceptable for the current migration phase. If it is blocked, check whether the required tooling is installed and whether module.toml publishes an implementation for the target adapter and platform.
+
+```bash title="Terminal"
+SMU_HOME_DIR="$PWD" smu blueprint doctor --strict --json
+SMU_HOME_DIR="$PWD" smu provisioning-adapter preflight --adapter hybrid --profile default --json
+```
+
+<span id="verify" />
+
+## Test one host before removing fallback
+
+On your test host, apply the adapter and profile that passed preflight. The apply step prepares generated artifacts and runs the adapter operations. Check that the expected configuration appears and that a fresh shell, editor, or other affected application starts correctly. Keep the previous blueprint commit available and review rollback coverage before changing a primary machine.
+
+Repeat the comparison as you port modules. Once each required module has an appropriate Nix implementation, test without rcm fallback and preflight again before switching additional machines.
+
+```bash title="Terminal"
+SMU_HOME_DIR="$PWD" smu provisioning-adapter apply --adapter hybrid --profile default
+```
+
+<GuideCards links={[{"label":"Author or adapt a module","href":"/docs/guides/author-a-module","icon":"terminal","description":"Add a small reusable task to your blueprint, declare what it changes, and check it on the right host before provisioning."},{"label":"Updates and rollback","href":"/docs/guides/updates","icon":"up","description":"Preview updates to an installed setup, check readiness, and use the state ledger to inspect rollback coverage."}]} />

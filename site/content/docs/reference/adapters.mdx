@@ -1,0 +1,65 @@
+---
+title: "Provisioning adapters"
+description: "Provisioning adapters determine how smu applies a blueprint. Choose one for the host and the capabilities published by its modules."
+---
+
+<span id="modes" />
+
+## Available adapters
+
+Choose an adapter based on the host and the module implementations available in the blueprint. rcm is the traditional path for shell scripts, Brewfiles, package lists, and symlinks. A Nix adapter requires its corresponding tools and modules that declare the adapter.
+
+The global adapter in smu.toml is a default. A named profile can override it. The profile also selects the modules, so checking an adapter by itself does not confirm that every module in the profile is supported.
+
+| Adapter | Use it for |
+| --- | --- |
+| rcm | Shell modules, package lists, Brewfiles, and rcm symlinks. |
+| home-manager | Nix user environments on supported Linux and macOS hosts. |
+| nix-darwin | Nix-managed macOS system configuration. |
+| nixos | System configuration on a NixOS host. |
+| hybrid | A Nix adapter with rcm fallback for legacy modules. |
+
+<span id="preflight" />
+
+## Check adapter support
+
+Capabilities describe the supported host families and requirements. Preflight checks the chosen profile and its modules before apply.
+
+Review host_supported, can_apply, and errors first. Read plan for the proposed commands and generated paths. A missing-module error points to the checkout or module name. A missing-adapter error points to a module that cannot supply the selected implementation.
+
+The Home Manager example assumes it is installed and the default profile includes modules that publish Home Manager definitions. For an rcm profile, substitute rcm. For NixOS, run checks on an actual NixOS host.
+
+```bash title="Terminal"
+smu provisioning-adapter capabilities --json
+smu provisioning-adapter preflight --adapter home-manager --profile default --json
+```
+
+<span id="hybrid" />
+
+## Configure a hybrid migration
+
+Pick the Nix implementation and decide whether legacy rcm modules may fall back. Set allow_rcm_fallback to false for a profile that must be fully backed by the Nix adapter.
+
+A hybrid plan shows which modules use the Nix adapter and which fall back to rcm. Review the fallback group so you know which module scripts or package lists can still run.
+
+```toml title="smu.toml"
+[provisioning]
+adapter = "hybrid"
+nix_adapter = "home-manager"
+allow_rcm_fallback = true
+```
+
+<GuideCards links={[{"label":"Blueprint layout","href":"/docs/guides/blueprints","icon":"folder","description":"A blueprint is the Git repository that describes your setup. Fork the template and keep machine configuration under version control."},{"label":"Headless VPS","href":"/docs/guides/vps","icon":"server","description":"Use the VPS setup profile on a headless Debian or Ubuntu machine, including a DigitalOcean Droplet."},{"label":"Plan a Nix migration","href":"/docs/guides/nix-migration","icon":"shell","description":"Test a hybrid blueprint alongside an existing rcm setup and use coverage reports to decide which modules can move to Nix."}]} />
+
+<span id="troubleshooting" />
+
+## Diagnose a failed preflight
+
+
+
+| Finding | What to check |
+| --- | --- |
+| Host unsupported | Choose an adapter that supports this operating system. NixOS is for a NixOS host. |
+| No modules selected | Check the named profile and its modules in smu.toml. |
+| Module missing | Confirm the module name and checkout before changing adapters. |
+| Adapter missing | Use a compatible module, add the adapter implementation, or deliberately allow rcm fallback in a hybrid profile. |

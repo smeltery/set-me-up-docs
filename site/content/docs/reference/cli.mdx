@@ -1,0 +1,62 @@
+---
+title: "CLI reference"
+description: "Use smu to discover modules, inspect a blueprint, apply changes, and maintain an installed setup."
+---
+
+<span id="commands" />
+
+## Common commands
+
+Run smu --help on the installed machine for the available flags. The table groups frequently used commands by task.
+
+Commands with output such as status, plan, or diff are useful before applying a change. Use the bundled Python CLI from Quick start when you need to target a specific checkout or want to avoid setup work performed by the legacy shell wrapper.
+
+| Command | What it does | Effect |
+| --- | --- | --- |
+| smu --list-modules | List available modules for the host. | Inspect |
+| smu status --json | Report installed and missing modules. | Inspect |
+| smu plan --machine vps --json | Preview the server setup. | Preview |
+| smu diff example | Preview module changes for the named module. | Preview |
+| smu --provision --no-base --modules example | Apply only the named module. | Apply |
+| smu update --all --dry-run | Preview the update pipeline. | Preview |
+| smu --setup-profile vps | Apply the headless server setup. | Apply |
+
+<span id="scope" />
+
+## Target the intended checkout
+
+The Python CLI uses SMU_HOME_DIR, or $HOME/set-me-up if it is unset, to find the blueprint. Keep the variable set when running from a non-default directory. Check which smu your shell resolves if the command appears to read a different setup.
+
+```bash title="Terminal"
+type smu
+printf "%s\n" "${SMU_HOME_DIR:-$HOME/set-me-up}"
+```
+
+<GuideCards links={[{"label":"Run the bundled CLI","href":"/docs/quick-start","icon":"terminal","description":"Set up your first machine. Choose a blueprint, review the bootstrap, verify the installed CLI, and try one module."}]} />
+
+<span id="rcm" />
+
+## Inspect or manage rcm symlinks
+
+With rcm installed, use --lsrc to list files that would be symlinked, --rcup to link them, or --rcdn to remove links.
+
+Review the source and destination paths from --lsrc. The apply and removal flags change symlinks, so use them after checking that the dotfiles directory points at the intended checkout.
+
+```bash title="Terminal"
+smu --lsrc
+```
+
+<span id="automation" />
+
+## Use structured output
+
+Use --json on commands that support it to collect structured status and preflight data. Check the installed version’s help before depending on a flag in automation.
+
+A JSON report can describe a failure even when it is valid JSON. Check the exit status and report-specific fields before running dependent commands. In adapter preflight, inspect can_apply and errors. For status, read the modules list and retain unknown as a separate state.
+
+```bash title="Terminal"
+smu status --json
+smu provisioning-adapter preflight --adapter rcm --profile default --json
+```
+
+<GuideCards links={[{"label":"Trust and safety","href":"/docs/reference/trust","icon":"shell","description":"Review the sources and proposed system changes before installing a blueprint or applying a module."},{"label":"Updates and rollback","href":"/docs/guides/updates","icon":"up","description":"Preview updates to an installed setup, check readiness, and use the state ledger to inspect rollback coverage."}]} />

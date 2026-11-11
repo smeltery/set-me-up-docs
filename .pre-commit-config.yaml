@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: validate
+        name: Validate documentation and site (CI parity)
+        entry: flox activate -- scripts/validate.sh --all
+        language: system
+        pass_filenames: false
+        always_run: true

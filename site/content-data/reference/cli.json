@@ -1,0 +1,99 @@
+{
+  "path": "/docs/reference/cli",
+  "title": "CLI reference",
+  "group": "Reference",
+  "order": 2,
+  "description": "Use smu to discover modules, inspect a blueprint, apply changes, and maintain an installed setup.",
+  "sections": [
+    {
+      "id": "commands",
+      "title": "Common commands",
+      "paragraphs": [
+        "Run smu --help on the installed machine for the available flags. The table groups frequently used commands by task.",
+        "Commands with output such as status, plan, or diff are useful before applying a change. Use the bundled Python CLI from Quick start when you need to target a specific checkout or want to avoid setup work performed by the legacy shell wrapper."
+      ],
+      "table": [
+        ["Command", "What it does", "Effect"],
+        [
+          "smu --list-modules",
+          "List available modules for the host.",
+          "Inspect"
+        ],
+        [
+          "smu status --json",
+          "Report installed and missing modules.",
+          "Inspect"
+        ],
+        [
+          "smu plan --machine vps --json",
+          "Preview the server setup.",
+          "Preview"
+        ],
+        [
+          "smu diff example",
+          "Preview module changes for the named module.",
+          "Preview"
+        ],
+        [
+          "smu --provision --no-base --modules example",
+          "Apply only the named module.",
+          "Apply"
+        ],
+        [
+          "smu update --all --dry-run",
+          "Preview the update pipeline.",
+          "Preview"
+        ],
+        ["smu --setup-profile vps", "Apply the headless server setup.", "Apply"]
+      ]
+    },
+    {
+      "id": "scope",
+      "title": "Target the intended checkout",
+      "paragraphs": [
+        "The Python CLI uses SMU_HOME_DIR, or $HOME/set-me-up if it is unset, to find the blueprint. Keep the variable set when running from a non-default directory. Check which smu your shell resolves if the command appears to read a different setup."
+      ],
+      "language": "Terminal",
+      "code": "type smu\nprintf \"%s\\n\" \"${SMU_HOME_DIR:-$HOME/set-me-up}\"",
+      "links": [
+        {
+          "label": "Run the bundled CLI",
+          "href": "/docs/quick-start",
+          "icon": "terminal"
+        }
+      ]
+    },
+    {
+      "id": "rcm",
+      "title": "Inspect or manage rcm symlinks",
+      "paragraphs": [
+        "With rcm installed, use --lsrc to list files that would be symlinked, --rcup to link them, or --rcdn to remove links.",
+        "Review the source and destination paths from --lsrc. The apply and removal flags change symlinks, so use them after checking that the dotfiles directory points at the intended checkout."
+      ],
+      "language": "Terminal",
+      "code": "smu --lsrc"
+    },
+    {
+      "id": "automation",
+      "title": "Use structured output",
+      "paragraphs": [
+        "Use --json on commands that support it to collect structured status and preflight data. Check the installed version’s help before depending on a flag in automation.",
+        "A JSON report can describe a failure even when it is valid JSON. Check the exit status and report-specific fields before running dependent commands. In adapter preflight, inspect can_apply and errors. For status, read the modules list and retain unknown as a separate state."
+      ],
+      "links": [
+        {
+          "label": "Trust and safety",
+          "href": "/docs/reference/trust",
+          "icon": "shell"
+        },
+        {
+          "label": "Updates and rollback",
+          "href": "/docs/guides/updates",
+          "icon": "up"
+        }
+      ],
+      "code": "smu status --json\nsmu provisioning-adapter preflight --adapter rcm --profile default --json",
+      "language": "Terminal"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "path": "/docs/guides/troubleshooting",
+  "title": "Troubleshoot an installed setup",
+  "group": "Operations",
+  "order": 10,
+  "description": "Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports.",
+  "sections": [
+    {
+      "id": "orient",
+      "title": "Confirm the shell and blueprint",
+      "paragraphs": [
+        "Start in the terminal where the problem appears. Use command -v to see which smu the shell runs. An empty result means the command is unavailable on that shell’s PATH. Check that bootstrap completed and restart the shell before changing machine settings.",
+        "Check SMU_HOME_DIR next. With no override, smu uses the set-me-up directory under your home directory. In a multi-checkout workflow, identify the active blueprint before you inspect files or retry a change."
+      ],
+      "language": "Terminal",
+      "code": "command -v smu\nblueprint_dir=\"${SMU_HOME_DIR:-$HOME/set-me-up}\"\nprintf \"%s\\n\" \"$blueprint_dir\"\ngit -C \"$blueprint_dir\" status --short"
+    },
+    {
+      "id": "health",
+      "title": "Collect read-only diagnostics",
+      "paragraphs": [
+        "The general doctor reports installer health, profile and adapter checks, conflicts, and update readiness. Use status to see module detection and update doctor for a problem specific to Git or submodule updates.",
+        "Read the first failed check and its path before fixing anything. Status can infer whether a declarative package or an entry is present, but a shell module’s effects may require checking the resulting application or configuration directly."
+      ],
+      "language": "Terminal",
+      "code": "smu doctor --json\nsmu status --json\nsmu update doctor --json"
+    },
+    {
+      "id": "symptoms",
+      "title": "Match the symptom to the next check",
+      "paragraphs": [
+        "Use these checks to narrow the issue. Fix one cause at a time, then run the same check again so you can tell whether the repair worked."
+      ],
+      "table": [
+        ["Symptom", "Next step"],
+        [
+          "Module is missing from the list",
+          "Check the module name and host bucket. Use smu --list-modules --all to see whether it exists for a different platform."
+        ],
+        [
+          "Dotfile points at an unexpected source",
+          "Run smu --lsrc and inspect the tag order and active blueprint."
+        ],
+        [
+          "Preflight reports an unavailable adapter",
+          "Check supported hosts, required tools, and module adapter coverage."
+        ],
+        [
+          "Update reports a dirty checkout",
+          "Use Git status to find the local change. Commit or stash work you want to keep before retrying."
+        ],
+        [
+          "Theme appears unchanged in a new terminal",
+          "Run smu profile and inspect environment and machine-local overrides."
+        ]
+      ],
+      "links": [
+        {
+          "label": "Inspect rcm tags and links",
+          "href": "/docs/guides/dotfiles",
+          "icon": "folder"
+        },
+        {
+          "label": "Resolve theme and prompt choices",
+          "href": "/docs/guides/themes-and-prompts",
+          "icon": "shell"
+        },
+        {
+          "label": "Review adapter support",
+          "href": "/docs/reference/adapters",
+          "icon": "server"
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "title": "Preview the recovery",
+      "paragraphs": [
+        "If the original operation recorded a state event, the rollback doctor explains whether the event has automatic, partial, or manual recovery coverage. The dry run lets you see the proposed inverse steps before changing the host.",
+        "Keep a copy of the current file or checkout before applying recovery. Use the run’s status and the affected application as your final checks. For script modules with manual recovery, inspect the module’s writes and restore only the paths it owns."
+      ],
+      "language": "Terminal",
+      "code": "smu rollback doctor --json\nsmu rollback --dry-run",
+      "links": [
+        {
+          "label": "Review update and rollback steps",
+          "href": "/docs/guides/updates",
+          "icon": "up"
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "title": "Collect a report you can share",
+      "paragraphs": [
+        "A support bundle records versions, health checks, module status, and plan details. The redaction step masks recognized secret patterns. Read the resulting file before attaching it to an issue, and remove remaining private hostnames, repository names, paths, or any sensitive values.",
+        "Include what you expected to happen, the exact command you ran, the first failed check, and what changed since the last successful run. A short reproducible sequence helps someone identify the failing layer."
+      ],
+      "language": "Terminal",
+      "code": "smu support bundle --redact --output support.json",
+      "links": [
+        {
+          "label": "Handle diagnostics and secrets",
+          "href": "/docs/reference/trust",
+          "icon": "shell"
+        }
+      ]
+    },
+    {
+      "id": "failure-layers",
+      "title": "Find the failing layer before retrying",
+      "paragraphs": [
+        "Start with the earliest relevant error, rather than the last line printed by a wrapper. Separate source retrieval, blueprint validation, module discovery, adapter coverage, execution, and application behavior. Each layer has different evidence and a different repair.",
+        "A missing module can mean the checkout scope excluded its source. An unsupported adapter can mean the module exists but has no implementation for that adapter. A successful module can still need application-specific verification. These are different failures and should not all be handled by reinstalling the blueprint."
+      ],
+      "diagram": {
+        "title": "Trace an unexpected result",
+        "actors": ["Checkout", "Plan / preflight", "Application"],
+        "steps": [
+          [0, 1, "Confirm sources and configuration"],
+          [1, 1, "Check selection, conflicts, and coverage"],
+          [1, 2, "Inspect execution and resulting files"],
+          [2, 0, "Recheck assumptions only if sources differ"]
+        ],
+        "caption": "Preserve diagnostic output and narrow the failing layer before making another change."
+      }
+    },
+    {
+      "id": "good-reproduction",
+      "title": "Write a useful reproduction",
+      "paragraphs": [
+        "Describe the host platform, blueprint revision, selected profile or module, exact command, and first error. Explain what you expected and how you verified the actual result. Include whether this was a new machine, an update, or a retry after a partial run.",
+        "Use a minimal module selection when reproducing the failure. Remove credentials from reports and check command output for private repository URLs or hostnames. A small reproducible case is easier to test than a complete dump of a personal setup."
+      ],
+      "links": [
+        {
+          "label": "Understand trust and diagnostics",
+          "href": "/docs/reference/trust",
+          "icon": "shell"
+        }
+      ]
+    }
+  ]
+}

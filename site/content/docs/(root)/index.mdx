@@ -1,0 +1,52 @@
+---
+title: "Overview"
+description: "Define your setup in a version-controlled blueprint, then use smu to apply the modules each machine needs."
+---
+
+<span id="choose-a-path" />
+
+## Choose a setup path
+
+Choose Quick start when you want to bring your personal tools and dotfiles to a workstation. For a fresh Debian or Ubuntu server over SSH, use the Headless VPS guide for a smaller package baseline.
+
+Start with the rcm path when your blueprint uses shell modules, package lists, and dotfile symlinks. Check Provisioning adapters if you already manage your user environment or operating system with Nix.
+
+<GuideCards links={[{"label":"Quick start","href":"/docs/quick-start","icon":"terminal","description":"Set up your first machine. Choose a blueprint, review the bootstrap, verify the installed CLI, and try one module."},{"label":"Headless VPS","href":"/docs/guides/vps","icon":"server","description":"Use the VPS setup profile on a headless Debian or Ubuntu machine, including a DigitalOcean Droplet."},{"label":"Provisioning adapters","href":"/docs/reference/adapters","icon":"shell","description":"Provisioning adapters determine how smu applies a blueprint. Choose one for the host and the capabilities published by its modules."}]} />
+
+<span id="how-it-fits" />
+
+## How it fits together
+
+The blueprint is your Git repository. It contains dotfiles, module selections, and the settings that tell smu how to provision them. The bootstrap downloads that repository and its selected submodules, including a bundled copy of the installer.
+
+A module is a unit of work, such as a package list or a setup script. A profile selects a group of modules, while an adapter determines how to apply them. For example, a desktop profile can use Home Manager for modules that publish Nix definitions and rcm for a shell module during a hybrid migration.
+
+<SetupDiagram diagram={{"title":"From blueprint to provisioned machine","actors":["You","Blueprint bootstrap","smu"],"steps":[[0,1,"Review and preview"],[0,1,"Install the chosen blueprint"],[1,2,"Set up the CLI"],[0,2,"Plan and apply selected modules"]],"caption":"Keep your blueprint under version control and review changes before applying them."}} />
+
+<span id="workflow" />
+
+## A typical setup session
+
+Review the target repository and the scripts it runs. Install the blueprint into the directory you intend to keep, then use the bundled CLI to inspect the profile and module state.
+
+Apply one reviewed module first. Check that it did what you expected before adding the rest. When you move to another machine, start with the same blueprint and choose the profile that fits that host.
+
+<GuideCards links={[{"label":"Customize dotfiles","href":"/docs/guides/dotfiles","icon":"folder","description":"Use rcm tags to choose which configuration files a blueprint links into your home directory."},{"label":"Choose a machine profile","href":"/docs/guides/machine-profiles","icon":"server","description":"Separate built-in machine presets from blueprint profiles so you can preview the right modules and adapter for each host."}]} />
+
+<span id="maintain" />
+
+## Maintain a setup
+
+Check what a module changes before applying it. Preview updates to an installed checkout before switching to new configuration.
+
+Use the status report to distinguish missing packages from script modules that have no detection marker. If an update is blocked by local work or a provisioning step fails, review the relevant diagnostic before retrying.
+
+<GuideCards links={[{"label":"Choose modules","href":"/docs/guides/modules","icon":"folder","description":"Discover modules in your blueprint, inspect what they do, and apply the subset you need."},{"label":"Update a setup","href":"/docs/guides/updates","icon":"up","description":"Preview updates to an installed setup, check readiness, and use the state ledger to inspect rollback coverage."},{"label":"Trust and safety","href":"/docs/reference/trust","icon":"shell","description":"Review the sources and proposed system changes before installing a blueprint or applying a module."},{"label":"Troubleshoot a setup","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."}]} />
+
+<span id="continue-learning" />
+
+## Continue with a guided workflow
+
+Use the guides below once you understand the basic blueprint and module flow. They cover the review decisions around a setup, the differences to recheck on another host, and the verification routine that makes future changes predictable.
+
+<GuideCards links={[{"label":"Review a setup plan","href":"/docs/guides/review-a-plan","icon":"folder","description":"Read a plan as a review of sources, module selection, conflicts, and expected writes before applying a setup."},{"label":"Move to a new machine","href":"/docs/guides/new-machine","icon":"server","description":"Use your existing blueprint to prepare another computer without copying stale state, credentials, or unsupported assumptions."},{"label":"Build a repeatable setup routine","href":"/docs/guides/setup-routine","icon":"up","description":"Turn a successful first installation into a small review, apply, and verify workflow you can run again with confidence."}]} />

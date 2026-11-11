@@ -1,0 +1,107 @@
+{
+  "path": "/docs/guides/vps",
+  "title": "Headless VPS",
+  "group": "Operations",
+  "order": 1,
+  "description": "Use the VPS setup profile on a headless Debian or Ubuntu machine, including a DigitalOcean Droplet.",
+  "sections": [
+    {
+      "id": "prepare",
+      "title": "Prepare the host",
+      "paragraphs": [
+        "Start on a headless Debian or Ubuntu host that you can reach over SSH. Use an account with sudo for installing system packages, and run the bootstrap as the user whose home directory will hold the blueprint.",
+        "Install the tools below, then follow Quick start to configure your fork and download and inspect smu-bootstrap.sh. Keep SSH credentials and host-specific secrets outside the blueprint."
+      ],
+      "language": "Terminal",
+      "code": "sudo apt-get update\nsudo apt-get install -y bash curl git ca-certificates python3",
+      "links": [
+        {
+          "label": "Download the bootstrap",
+          "href": "/docs/quick-start",
+          "icon": "terminal"
+        }
+      ]
+    },
+    {
+      "id": "preview",
+      "title": "Preview the platform bootstrap",
+      "paragraphs": [
+        "Select platform submodules to limit what the bootstrap checks out. Review the repository, branch, destination, and submodule scope.",
+        "Platform scope keeps shared repositories and the Debian module checkout where your blueprint declares them. It skips the Mac-specific module checkouts. The plan’s submodule_scope value should be platform."
+      ],
+      "language": "Terminal",
+      "code": "SMU_SUBMODULE_SCOPE=platform bash smu-bootstrap.sh --no-header --plan --json"
+    },
+    {
+      "id": "install",
+      "title": "Install the blueprint",
+      "paragraphs": [
+        "Use the same platform scope when you run the reviewed bootstrap.",
+        "Open the checkout in the current SSH session and verify the bundled CLI as shown in Quick start. If the smu command is unavailable, use the temporary Bash function from that guide."
+      ],
+      "language": "Terminal",
+      "code": "SMU_SUBMODULE_SCOPE=platform bash smu-bootstrap.sh --no-header"
+    },
+    {
+      "id": "plan",
+      "title": "Plan server provisioning",
+      "paragraphs": [
+        "Inspect the VPS profile, modules, and expected changes before provisioning.",
+        "Look for the server/headless module, then review its package list and any conflict, secret, or trust findings. If that module cannot be resolved, check whether dotfiles/modules/debian is initialized before retrying."
+      ],
+      "language": "Terminal",
+      "code": "smu plan --machine vps --json"
+    },
+    {
+      "id": "provision",
+      "title": "Apply the server profile",
+      "paragraphs": [
+        "Use the vps profile for the targeted server setup. It provisions the Debian server/headless module instead of the workstation package set.",
+        "This command can install Debian packages and prompt for sudo. Run it after checking the plan and reviewing the server/headless package list."
+      ],
+      "language": "Terminal",
+      "code": "smu --setup-profile vps"
+    },
+    {
+      "id": "verify",
+      "title": "Verify the server setup",
+      "paragraphs": [
+        "Check the Debian module in the status output and review any partial or missing package entries. If the setup profile rejects the host, check that the machine is a Debian or Ubuntu system rather than retrying with a workstation profile."
+      ],
+      "language": "Terminal",
+      "code": "smu status --search server/headless --json",
+      "links": [
+        {
+          "label": "Machine profiles",
+          "href": "/docs/guides/machine-profiles",
+          "icon": "server"
+        },
+        {
+          "label": "Troubleshoot a setup",
+          "href": "/docs/guides/troubleshooting",
+          "icon": "terminal"
+        }
+      ]
+    },
+    {
+      "id": "nix",
+      "title": "Choose a Nix path if needed",
+      "paragraphs": [
+        "Use Home Manager for user-level provisioning when Nix and Home Manager are installed on the host. Use the NixOS adapter only on a NixOS host.",
+        "The server setup command above follows the rcm provisioning path for the Debian baseline module. For a Nix-managed setup, select the Nix adapter in smu.toml and use its separate preflight and apply workflow."
+      ],
+      "links": [
+        {
+          "label": "Provisioning adapters",
+          "href": "/docs/reference/adapters",
+          "icon": "shell"
+        },
+        {
+          "label": "Trust and safety",
+          "href": "/docs/reference/trust",
+          "icon": "folder"
+        }
+      ]
+    }
+  ]
+}

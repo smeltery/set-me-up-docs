@@ -1,0 +1,56 @@
+{
+  "path": "/docs/reference/trust",
+  "title": "Trust and safety",
+  "group": "Reference",
+  "order": 3,
+  "description": "Review the sources and proposed system changes before installing a blueprint or applying a module.",
+  "sections": [
+    {
+      "id": "review",
+      "title": "Review the sources you run",
+      "paragraphs": [
+        "Read your bootstrap, its delegated installer, and any selected module script before running them. Review packages and write targets, and keep host secrets outside the blueprint.",
+        "Start with the exact fork and branch you plan to run. Read its .gitmodules entries, then review the scripts and package definitions for the selected modules. Check whether a package manager command, network request, sudo prompt, or write outside your home directory is expected.",
+        "Keep SSH keys, tokens, and machine-specific credentials outside tracked dotfiles. Use a secure source appropriate to the host, such as the VPS provider’s secret mechanism or your normal secrets manager."
+      ]
+    },
+    {
+      "id": "metadata",
+      "title": "Inspect module trust metadata",
+      "paragraphs": [
+        "A module can publish trust details in module.toml, such as its trust classification, network and sudo requirements, expected writes, and rollback coverage.",
+        "Treat this information as a description supplied by the module author. Read the implementation to confirm the declared network, write, and privilege requirements. Missing trust metadata is reported as unspecified."
+      ],
+      "language": "module.toml",
+      "code": "trust = \"first-party\"\nnetwork = true\nrequires_sudo = false\nwrites = [\"~/.config/git\"]\nrollback = \"partial\""
+    },
+    {
+      "id": "check",
+      "title": "Run read-only checks",
+      "paragraphs": [
+        "A plan summarizes the intended blueprint, adapter, modules, and changes. Run the doctor commands to surface trust and secret findings before applying.",
+        "Read the plan’s module and package operations, adapter conflicts, secret findings, trust warnings, and rollback coverage. For a machine other than the VPS example, choose its profile or omit --machine to plan from the configured blueprint.",
+        "The secret check looks for common names and value patterns. Review the reported paths directly and investigate warnings before applying changes."
+      ],
+      "language": "Terminal",
+      "code": "smu plan --machine vps --json\nsmu trust doctor --json\nsmu secrets doctor --json\nsmu doctor --strict --json"
+    },
+    {
+      "id": "share",
+      "title": "Redact diagnostic reports",
+      "paragraphs": [
+        "Use the redacted support bundle option and review its contents before sharing it.",
+        "The bundle writes a local file containing health, version, and setup details. Redaction covers known credential patterns. Review the entire file before sharing, including repository paths, host details, and module names."
+      ],
+      "language": "Terminal",
+      "code": "smu support bundle --redact --output support.json",
+      "links": [
+        {
+          "label": "Updates and rollback",
+          "href": "/docs/guides/updates",
+          "icon": "up"
+        }
+      ]
+    }
+  ]
+}

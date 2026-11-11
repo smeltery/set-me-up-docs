@@ -1,0 +1,99 @@
+{
+  "path": "/docs/guides/setup-routine",
+  "title": "Build a repeatable setup routine",
+  "description": "Turn a successful first installation into a small review, apply, and verify workflow you can run again with confidence.",
+  "group": "Operations",
+  "order": 3,
+  "sections": [
+    {
+      "id": "baseline",
+      "title": "Establish a known working baseline",
+      "paragraphs": [
+        "A baseline is a blueprint revision plus evidence that the setup works on a particular host. It is more useful than a list of installed packages because it records the intent, implementation sources, and verification you relied on.",
+        "After a successful first run, save your configuration changes in Git and note the tests you performed. Keep machine-specific values separate from shared preferences, and keep sensitive files outside the repository. You should be able to explain which parts of the machine the blueprint owns."
+      ],
+      "links": [
+        {
+          "label": "Understand the blueprint",
+          "href": "/docs/guides/blueprints",
+          "icon": "folder"
+        }
+      ]
+    },
+    {
+      "id": "before",
+      "title": "Before each change",
+      "paragraphs": [
+        "Inspect checkout state and decide what you want to change. Avoid combining a module update, a large dotfile rewrite, and an adapter migration in the same first test. Smaller changes give you a clearer recovery boundary.",
+        "Preview the affected selection and read the relevant scripts. If you are updating sources, use the update doctor and dry run before applying. Preserve local work before attempting an update."
+      ],
+      "code": "smu update doctor --json\nsmu update --all --dry-run --json",
+      "language": "Terminal"
+    },
+    {
+      "id": "cycle",
+      "title": "Use a short review cycle",
+      "paragraphs": [
+        "Treat the plan as the start of a conversation with the machine: does it identify the expected sources and intended writes? Apply the smallest useful change, then inspect the specific result. Only expand the change when that first result is understood.",
+        "A green status is useful evidence, but the consuming application is the final check. Configuration syntax, runtime plugins, and authentication can still require attention after provisioning completes."
+      ],
+      "diagram": {
+        "title": "The repeatable setup loop",
+        "actors": ["Review", "Apply", "Verify"],
+        "steps": [
+          [0, 1, "Approve a small selection"],
+          [1, 2, "Check actual tools and files"],
+          [2, 0, "Save evidence and plan the next change"]
+        ],
+        "caption": "Keep each loop small enough that a failure has an identifiable cause and recovery path."
+      }
+    },
+    {
+      "id": "verification",
+      "title": "Choose practical verification checks",
+      "paragraphs": [
+        "Write down checks that relate to your goal. For a shell module, open a new shell and run a familiar command. For editor configuration, open a project and confirm the expected integration. For dotfiles, check the link destination and the application that reads it.",
+        "Record incomplete checks instead of treating a successful command as complete acceptance. If a module has unknown state, explain the direct observation you used to decide whether it worked."
+      ],
+      "table": [
+        ["Change", "Useful verification"],
+        [
+          "Package installation",
+          "Start the executable and inspect its version."
+        ],
+        [
+          "Dotfile link",
+          "Inspect the destination, then launch the consuming application."
+        ],
+        [
+          "Profile edit",
+          "Confirm module selection and adapter coverage on the target host."
+        ],
+        [
+          "Source update",
+          "Run doctors and repeat the important application checks."
+        ]
+      ]
+    },
+    {
+      "id": "recovery",
+      "title": "Keep a recovery boundary",
+      "paragraphs": [
+        "Before a change, know which files or applications you would need to restore. Preview ledger rollback coverage when it applies, and keep separate backups where arbitrary script or package operations are outside that coverage.",
+        "When something fails, preserve output and identify the first failing layer. Avoid using destructive reset or force options as routine cleanup. A partial run deserves inspection before a retry."
+      ],
+      "links": [
+        {
+          "label": "Review update recovery",
+          "href": "/docs/guides/updates",
+          "icon": "up"
+        },
+        {
+          "label": "Diagnose an unexpected result",
+          "href": "/docs/guides/troubleshooting",
+          "icon": "terminal"
+        }
+      ]
+    }
+  ]
+}

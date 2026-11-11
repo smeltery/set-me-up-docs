@@ -1,0 +1,78 @@
+---
+title: "Customize themes and prompts"
+description: "Choose a color theme and shell prompt, see what controls the effective profile, and apply the choice to supported tools."
+---
+
+<span id="choose" />
+
+## Choose the right setting
+
+A theme provides colors for supported tools. A prompt profile chooses the shell prompt, such as the full Starship configuration or the native classic prompt. A preset saves a theme and prompt pair together.
+
+Use list before setting an ID. Available themes come from the installed colorscheme module, and available prompts and presets come from their manifests. The current selection is marked in the list.
+
+```bash title="Terminal"
+smu theme list
+smu prompt list
+smu preset list
+smu profile
+```
+
+<span id="save" />
+
+## Save your choices
+
+This example saves Nord and the classic shell prompt. Run the corresponding list commands first to confirm both IDs are present on your machine. The choices are saved in ~/.config/set-me-up/profile.env.
+
+Open a new terminal to check shell startup behavior. If an existing terminal still uses an old prompt, check the effective choice there and again in a new shell.
+
+```bash title="Terminal"
+smu theme set nord
+smu prompt set classic
+smu profile
+```
+
+<span id="apply" />
+
+## Apply the theme to supported tools
+
+If you also want to update the tool adapters provided by the colorschemes module, apply the current theme. Review the active theme before running this command because it updates files for supported tools. You can also apply a theme as part of saving it with smu theme set &lt;theme&gt; --apply.
+
+Use a preset when you want a known theme and prompt combination. Setting a preset saves both choices. Add --apply when you also intend to provision the colorschemes module.
+
+```bash title="Terminal"
+smu theme apply
+```
+
+<span id="precedence" />
+
+## Find which value wins
+
+For each choice, the environment variable takes precedence, followed by its machine-local TOML file, the saved profile, and the default. If smu says it saved a new value but the old value still appears, start by checking the environment in that terminal.
+
+| Priority | Theme example |
+| --- | --- |
+| 1. Shell environment | SMU_THEME |
+| 2. Machine-local file | ~/.config/set-me-up/theme.toml |
+| 3. Saved profile | ~/.config/set-me-up/profile.env |
+| 4. Default | The installer’s default theme |
+
+```toml title="~/.config/set-me-up/theme.toml"
+theme = "nord"
+```
+
+<span id="diagnose" />
+
+## Check the profile after changing it
+
+The theme doctor checks the selected theme’s support files. The prompt doctor checks whether the selected prompt has what it needs. Use the profile doctor to check resolved configuration and identify stale or missing generated state.
+
+When a generated target contains a different local configuration, preserve your file and review the conflict before asking the adapter to rewrite it.
+
+```bash title="Terminal"
+smu theme doctor nord
+smu prompt doctor classic
+smu profile doctor
+```
+
+<GuideCards links={[{"label":"Troubleshoot configuration changes","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."},{"label":"Trust and safety","href":"/docs/reference/trust","icon":"shell","description":"Review the sources and proposed system changes before installing a blueprint or applying a module."}]} />

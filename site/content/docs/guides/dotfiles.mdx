@@ -1,0 +1,106 @@
+---
+title: "Organize and link dotfiles"
+description: "Use rcm tags to choose which configuration files a blueprint links into your home directory."
+---
+
+<span id="when-to-use" />
+
+## When to use an rcm tag
+
+Use a tag when several machines share a blueprint but need different configuration files. The tag stores files in Git and rcm creates links in the user’s home directory. Editing a linked file may also edit the tracked file in your blueprint, so check the link before making a machine-local change.
+
+These steps use the rcm provisioning path. For a Nix-backed setup, decide which files Home Manager owns before adding matching rcm paths. A path has one owner during normal provisioning.
+
+<GuideCards links={[{"label":"Choose an adapter","href":"/docs/reference/adapters","icon":"shell","description":"Provisioning adapters determine how smu applies a blueprint. Choose one for the host and the capabilities published by its modules."},{"label":"Blueprint layout","href":"/docs/guides/blueprints","icon":"folder","description":"A blueprint is the Git repository that describes your setup. Fork the template and keep machine configuration under version control."}]} />
+
+<span id="choose-paths" />
+
+## Choose a tag and map the paths
+
+In your blueprint, create a directory such as dotfiles/tag-work and put configuration files inside it using the same layout as the rest of the dotfiles tree. The example below gives Git a configuration file and a separate, tool-specific file under the home directory’s .config tree.
+
+The rcm configuration in your blueprint is dotfiles/rcrc. Add work to TAGS before the existing example and smu tags if work should take precedence. Keep the EXCLUDES value already used by your blueprint.
+
+| Source path | Home path |
+| --- | --- |
+| dotfiles/tag-work/gitconfig | ~/.gitconfig |
+| dotfiles/tag-work/config/example-tool/settings | ~/.config/example-tool/settings |
+
+```bash title="dotfiles/rcrc"
+TAGS="work example smu"
+EXCLUDES="base modules utilities"
+```
+
+<span id="precedence" />
+
+## Keep overlapping files intentional
+
+A tagged file replaces the file at the same destination as a whole. If you copy Git settings into a tag, include the shared settings you still need. A work-specific tag is a useful place for configuration you want to share across work machines.
+
+Keep credentials and machine-local values outside the repository. For tools that support include files, store only a reference to a local file in the blueprint and create the local file separately.
+
+<span id="local-overrides" />
+
+## Keep per-host files out of commits
+
+For an installed blueprint with machine-local support, run smu local init to prepare local configuration paths. Place host-specific files under dotfiles/local and add the local tag to dotfiles/rcrc. Keep the directory ignored by Git so a local setting does not enter the shared blueprint by mistake.
+
+Initialization creates a local folder and starter files when they are missing. Follow it with smu local doctor to check the local paths, rcm tag, and changes that still block an update. After adding a local file, preview the links the same way you would for shared files.
+
+```bash title="Terminal"
+smu local init
+smu local doctor --json
+```
+
+<span id="preview" />
+
+## Review the link plan
+
+Run the preview after changing tags or adding files. It uses the installed blueprint’s dotfiles/rcrc. Compare each affected source and destination with what you intended, especially files already present in your home directory.
+
+If a destination already contains a regular file or a link you manage yourself, compare and back up its content before applying. The set-me-up wrapper invokes rcup with force.
+
+```bash title="Terminal"
+smu --lsrc
+```
+
+<span id="apply" />
+
+## Apply and verify the links
+
+Apply only after reviewing the preview. Then check the destination link and open the tool that uses it. For the Git example, the target should point into the active blueprint.
+
+```bash title="Terminal"
+smu --rcup
+ls -l "$HOME/.gitconfig"
+```
+
+<span id="recover" />
+
+## Diagnose a missing or unexpected link
+
+If the destination is missing, check the tag spelling, its position in TAGS, the path inside the tag, and any EXCLUDES entries. If the source is from another checkout, check SMU_HOME_DIR and run the preview again.
+
+The smu --rcdn command removes managed dotfile links. Treat it as a broad change to the current set of links and review the scope before running it. If you only changed a tag, fix the tag and verify the resulting link plan first.
+
+<GuideCards links={[{"label":"Troubleshoot an installed setup","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."},{"label":"Review paths and secrets","href":"/docs/reference/trust","icon":"shell","description":"Review the sources and proposed system changes before installing a blueprint or applying a module."}]} />
+
+<span id="link-lifecycle" />
+
+## Understand the lifetime of a managed link
+
+In the rcm flow, your home-directory entry points back to a file inside the blueprint checkout. Editing the source changes what the application reads through that link. Deleting or moving the checkout can therefore break configuration even though the destination link still appears in your home directory.
+
+Keep the active checkout at a stable path. When adopting existing dotfiles, compare their content before moving them into a tag. Test one representative file first so that tag selection, exclusions, and the link destination are all understood.
+
+<SetupDiagram diagram={{"title":"From a tag to a live configuration file","actors":["Blueprint tag","rcm preview","Home directory"],"steps":[[0,1,"Select tagged source files"],[1,2,"Inspect intended destinations"],[0,2,"Apply reviewed symlinks"]],"caption":"The destination remains dependent on the source file in the active checkout."}} />
+
+<span id="verify-consumers" />
+
+## Verify the application, not just the symlink
+
+A correct link is only the first check. Configuration can contain absolute paths, commands that are not installed yet, or plugins that load on startup. Open a new shell or restart the consuming application and check its behavior before deleting your backup.
+
+For a failed application start, separate link selection from application syntax. Confirm where the link points, read the source file, and then use the application’s own configuration check when it provides one. This avoids changing rcm settings to solve an unrelated syntax error.
+
+<GuideCards links={[{"label":"Move to another machine","href":"/docs/guides/new-machine","icon":"server","description":"Use your existing blueprint to prepare another computer without copying stale state, credentials, or unsupported assumptions."}]} />

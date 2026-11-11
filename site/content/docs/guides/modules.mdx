@@ -1,0 +1,94 @@
+---
+title: "Modules"
+description: "Discover modules in your blueprint, inspect what they do, and apply the subset you need."
+---
+
+<span id="discover" />
+
+## Discover modules
+
+smu looks under dotfiles/modules in the installed blueprint. It lists modules by operating system bucket and includes universal modules in the usual host view.
+
+Output lists the relative name and a marker such as script, brewfile, packages, or manifest. For a row under macos named productivity/hyperkey, pass productivity/hyperkey to smu. The --all switch widens discovery across buckets and does not make those modules compatible with this host.
+
+Use --search to filter names and smu status --search to check their install state. A module can be installed, missing, partial, or unknown. Unknown is common when a script provides no detection marker.
+
+```bash title="Terminal"
+smu --list-modules
+smu --list-modules --search shell
+smu status --search shell --json
+```
+
+<span id="inspect" />
+
+## Preview module changes
+
+Check the module’s implementation before running it. The stock blueprint has a direct custom module at dotfiles/modules/example/example.sh. smu can resolve that module by name even if it is absent from the operating-system buckets in the discovery list.
+
+The diff reports whether a module would be installed or verified based on detected state. It also reports planned changes to generated adapter files. Use it with a source review because it does not execute the module or predict every package manager or script side effect.
+
+```bash title="Terminal"
+smu diff example
+```
+
+<span id="apply" />
+
+## Apply selected modules
+
+Provision a reviewed module by name. The --no-base option excludes the base module from the requested list. If you intend to run the base setup, review it and select base explicitly.
+
+The example script is a template stub. It imports utilities from the default checkout path and has no package operations. The sample assumes that default path. Substitute a reviewed module from your own checkout when you are ready to apply real setup changes.
+
+```bash title="Terminal"
+smu --provision --no-base --modules example
+```
+
+<span id="verify" />
+
+## Verify the result
+
+Read the provisioning summary and look for example in the successfully provisioned list. The stock example has no package or config output. Use the latest ledger event in smu status --json as an additional check. The module can be absent from the modules list because its directory is outside the OS buckets.
+
+For a package or script module listed under an OS bucket, check its status and inspect the affected package or file directly. A script without an installation marker can still show unknown after a successful run.
+
+If a module is missing, check its name relative to its OS bucket, the selected submodule scope, and the files present in the checkout.
+
+```bash title="Terminal"
+smu status --json
+```
+
+<GuideCards links={[{"label":"Write detection and cleanup scripts","href":"/docs/guides/author-a-module","icon":"shell","description":"Add a small reusable task to your blueprint, declare what it changes, and check it on the right host before provisioning."},{"label":"Troubleshoot module discovery","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."}]} />
+
+<span id="uninstall" />
+
+## Preview an uninstall
+
+Brewfile and package modules can be reversed declaratively. Script modules need an opt-in uninstall script. Review the plan for items that need manual cleanup.
+
+The stock example has no uninstall companion, so the preview can report manual cleanup. For another module, substitute its name and inspect the list of actions before deciding whether to run the uninstall.
+
+```bash title="Terminal"
+smu --uninstall --modules example --dry-run
+```
+
+<GuideCards links={[{"label":"Trust and safety","href":"/docs/reference/trust","icon":"shell","description":"Review the sources and proposed system changes before installing a blueprint or applying a module."}]} />
+
+<span id="lifecycle" />
+
+## Follow the module lifecycle
+
+Discovery, planning, execution, and verification answer different questions. Discovery tells you what is present in this checkout. A diff describes the supported plan and detected state. Provisioning runs the selected implementation. Verification confirms that the tool or file you needed actually works.
+
+Do not use an unknown status as a reason to repeatedly run a script. Some scripts have no installation marker, and a successful command can still leave an application that requires a restart or a separate sign-in. Read the module and verify its observable result.
+
+<SetupDiagram diagram={{"title":"Select, inspect, apply, verify","actors":["You","smu","Module"],"steps":[[0,1,"Discover and inspect a module"],[1,0,"Return state and planned changes"],[0,1,"Apply the reviewed selection"],[1,2,"Execute the module implementation"],[2,0,"Verify the resulting tool or file"]],"caption":"Planning helps review the operation; verification checks the result on the actual host."}} />
+
+<span id="small-batches" />
+
+## Expand your setup in small batches
+
+Start with one module whose effect you can check directly. If it installs a program, confirm the program starts and reports the expected version. If it writes configuration, inspect the path and launch the consuming application. Keep the previous working configuration until the new one is verified.
+
+Once the baseline works, add related modules in a separate change. This keeps failure reports useful: you can identify which batch changed the machine, rather than diagnosing an entire workstation at once.
+
+<GuideCards links={[{"label":"Build a repeatable routine","href":"/docs/guides/setup-routine","icon":"up","description":"Turn a successful first installation into a small review, apply, and verify workflow you can run again with confidence."}]} />

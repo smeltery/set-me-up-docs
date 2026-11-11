@@ -1,0 +1,123 @@
+{
+  "path": "/docs/guides/blueprints",
+  "title": "Blueprints",
+  "group": "Guides",
+  "order": 1,
+  "description": "A blueprint is the Git repository that describes your setup. Fork the template and keep machine configuration under version control.",
+  "sections": [
+    {
+      "id": "layout",
+      "title": "Blueprint layout",
+      "paragraphs": [
+        "The set-me-up blueprint template ships example dotfiles, a custom module, and the entry point that delegates to the installer.",
+        "Fork the template so the branch you install points to configuration you control. A blueprint is the configuration and checkout manifest. The installer submodule provides the CLI, and shared module repositories supply work the blueprint can reuse."
+      ],
+      "table": [
+        ["Path", "Purpose"],
+        ["smu.toml", "Choose the provisioning adapter and profile modules."],
+        ["dotfiles/tag-example/", "Start from an example rcm tag."],
+        ["dotfiles/rcrc", "Choose rcm dotfile directories and behavior."],
+        ["dotfiles/modules/example/", "Start from an example custom module."],
+        ["dotfiles/modules/install.sh", "Bootstrap the chosen blueprint."],
+        [".gitmodules", "Declare the installer and shared module checkouts."]
+      ]
+    },
+    {
+      "id": "profiles",
+      "title": "Pick a provisioning adapter",
+      "paragraphs": [
+        "A profile lists modules for a setup. This example selects the traditional rcm adapter and the module shipped in the blueprint template.",
+        "The global provisioning setting picks the default adapter. A named profile can select its own modules and override that adapter. Use the exact module names in the checkout and validate the profile on a host it is meant to support."
+      ],
+      "language": "smu.toml",
+      "code": "[provisioning]\nadapter = \"rcm\"\n\n[profile.default]\nmodules = [\"example\"]",
+      "links": [
+        {
+          "label": "Provisioning adapters",
+          "href": "/docs/reference/adapters",
+          "icon": "shell"
+        }
+      ]
+    },
+    {
+      "id": "verify",
+      "title": "Validate the blueprint",
+      "paragraphs": [
+        "Use the bundled CLI from Quick start. The blueprint doctor checks the repository and configuration, and adapter preflight checks whether the selected modules can be handled by the adapter on this host.",
+        "The example assumes the stock rcm profile. For a different blueprint, substitute its configured adapter and profile. If preflight reports a missing module, check the name and whether its submodule was initialized. A missing adapter means the selected module needs an implementation for that adapter."
+      ],
+      "language": "Terminal",
+      "code": "smu blueprint doctor --strict --json\nsmu provisioning-adapter preflight --adapter rcm --profile default --json"
+    },
+    {
+      "id": "track-changes",
+      "title": "Track what changes",
+      "paragraphs": [
+        "Keep your customizations in your fork and review upstream changes before updating. Keep machine secrets out of version control. The installer fast-forwards a clean existing checkout and refuses to update a dirty one by default.",
+        "Review a pull request as you would a code change. Check the scripts, package list, expected writes, and any submodule revision changes. For an rcm setup, keep the checkout at its original path after symlinking dotfiles."
+      ],
+      "links": [
+        {
+          "label": "Install the fork",
+          "href": "/docs/quick-start",
+          "icon": "terminal"
+        },
+        {
+          "label": "Update a setup",
+          "href": "/docs/guides/updates",
+          "icon": "up"
+        },
+        {
+          "label": "Customize dotfiles",
+          "href": "/docs/guides/dotfiles",
+          "icon": "folder"
+        },
+        {
+          "label": "Author a module",
+          "href": "/docs/guides/author-a-module",
+          "icon": "shell"
+        }
+      ]
+    },
+    {
+      "id": "ownership",
+      "title": "Understand what each repository owns",
+      "paragraphs": [
+        "Your blueprint records the configuration you intend to use. The bundled installer interprets that configuration and provides smu. Shared module repositories contain implementations that can evolve independently. Keeping these responsibilities separate makes it possible to review a module update without confusing it with a change to your own dotfiles.",
+        "A submodule reference records a commit, not a promise to follow the latest upstream branch. Review both the reference change in the blueprint and the code at the new commit. Commit your own changes in the repository that owns those files; committing only the parent repository does not save uncommitted edits inside a submodule."
+      ],
+      "diagram": {
+        "title": "From versioned intent to applied setup",
+        "actors": ["Blueprint", "Installer", "Modules"],
+        "steps": [
+          [0, 1, "Provide configuration and pinned sources"],
+          [1, 2, "Resolve selected implementations"],
+          [2, 1, "Report execution results"],
+          [1, 0, "Record the applied setup event"]
+        ],
+        "caption": "The blueprint owns your choices; the installer and module checkouts supply their implementations."
+      }
+    },
+    {
+      "id": "review-checklist",
+      "title": "Review a blueprint change before installing it",
+      "paragraphs": [
+        "Read a change in terms of what it will do on a machine. A small profile edit can select a large package collection, and a short submodule reference update can contain many script changes. Compare the target machine, adapter, module selection, and destination paths before treating a diff as routine.",
+        "Keep changes focused enough to test on one host. Add one module or dotfile tag, preview its effects, and verify the application that consumes it. This produces a useful checkpoint before you expand the setup to another machine."
+      ],
+      "items": [
+        "Inspect changed scripts and hooks, not only configuration values.",
+        "Check package sources, privilege requirements, and writes outside the checkout.",
+        "Keep secrets and machine-specific credentials out of commits.",
+        "Run blueprint doctor and the applicable adapter preflight on the target host."
+      ],
+      "links": [
+        {
+          "label": "Review a plan",
+          "href": "/docs/guides/review-a-plan",
+          "icon": "folder"
+        }
+      ]
+    }
+  ]
+}

@@ -37,7 +37,7 @@ function listMarkdownFiles(directory) {
       continue;
     }
 
-    if (entry.endsWith(".md")) {
+    if (/\.mdx?$/.test(entry)) {
       files.push(path);
     }
   }

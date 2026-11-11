@@ -1,0 +1,20 @@
+---
+title: "Operations"
+description: "Keep an installed setup healthy: update it, verify changes, diagnose failures, and plan for additional hosts."
+---
+
+<span id="maintain" />
+
+## Maintain a working setup
+
+Use a short review, apply, and verify cycle. Understand the update boundary and rollback coverage before changing a machine that already works.
+
+<GuideCards links={[{"label":"Build a repeatable setup routine","href":"/docs/guides/setup-routine","icon":"up","description":"Turn a successful first installation into a small review, apply, and verify workflow you can run again with confidence."},{"label":"Updates and rollback","href":"/docs/guides/updates","icon":"up","description":"Preview updates to an installed setup, check readiness, and use the state ledger to inspect rollback coverage."},{"label":"Troubleshoot an installed setup","href":"/docs/guides/troubleshooting","icon":"terminal","description":"Find the failing layer, collect a useful health snapshot, and choose a recovery step based on what the installer actually reports."}]} />
+
+<span id="hosts" />
+
+## Operate servers and multiple hosts
+
+Use the headless path for Debian or Ubuntu servers and validate each host rather than assuming that a shared blueprint makes every environment identical.
+
+<GuideCards links={[{"label":"Headless VPS","href":"/docs/guides/vps","icon":"server","description":"Use the VPS setup profile on a headless Debian or Ubuntu machine, including a DigitalOcean Droplet."},{"label":"Plan a fleet of hosts","href":"/docs/guides/fleet","icon":"server","description":"Review a consistent set of per-host smu plans before making changes across multiple machines."}]} />

@@ -1,0 +1,61 @@
+---
+title: "Trust and safety"
+description: "Review the sources and proposed system changes before installing a blueprint or applying a module."
+---
+
+<span id="review" />
+
+## Review the sources you run
+
+Read your bootstrap, its delegated installer, and any selected module script before running them. Review packages and write targets, and keep host secrets outside the blueprint.
+
+Start with the exact fork and branch you plan to run. Read its .gitmodules entries, then review the scripts and package definitions for the selected modules. Check whether a package manager command, network request, sudo prompt, or write outside your home directory is expected.
+
+Keep SSH keys, tokens, and machine-specific credentials outside tracked dotfiles. Use a secure source appropriate to the host, such as the VPS provider’s secret mechanism or your normal secrets manager.
+
+<span id="metadata" />
+
+## Inspect module trust metadata
+
+A module can publish trust details in module.toml, such as its trust classification, network and sudo requirements, expected writes, and rollback coverage.
+
+Treat this information as a description supplied by the module author. Read the implementation to confirm the declared network, write, and privilege requirements. Missing trust metadata is reported as unspecified.
+
+```toml title="module.toml"
+trust = "first-party"
+network = true
+requires_sudo = false
+writes = ["~/.config/git"]
+rollback = "partial"
+```
+
+<span id="check" />
+
+## Run read-only checks
+
+A plan summarizes the intended blueprint, adapter, modules, and changes. Run the doctor commands to surface trust and secret findings before applying.
+
+Read the plan’s module and package operations, adapter conflicts, secret findings, trust warnings, and rollback coverage. For a machine other than the VPS example, choose its profile or omit --machine to plan from the configured blueprint.
+
+The secret check looks for common names and value patterns. Review the reported paths directly and investigate warnings before applying changes.
+
+```bash title="Terminal"
+smu plan --machine vps --json
+smu trust doctor --json
+smu secrets doctor --json
+smu doctor --strict --json
+```
+
+<span id="share" />
+
+## Redact diagnostic reports
+
+Use the redacted support bundle option and review its contents before sharing it.
+
+The bundle writes a local file containing health, version, and setup details. Redaction covers known credential patterns. Review the entire file before sharing, including repository paths, host details, and module names.
+
+```bash title="Terminal"
+smu support bundle --redact --output support.json
+```
+
+<GuideCards links={[{"label":"Updates and rollback","href":"/docs/guides/updates","icon":"up","description":"Preview updates to an installed setup, check readiness, and use the state ledger to inspect rollback coverage."}]} />

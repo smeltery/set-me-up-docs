@@ -1,0 +1,63 @@
+---
+title: "Review a setup plan"
+description: "Read a plan as a review of sources, module selection, conflicts, and expected writes before applying a setup."
+---
+
+<span id="purpose" />
+
+## What a plan is for
+
+A plan gives you a concrete object to review before changing a machine. It connects the active blueprint, host, adapter, and module selection to the checks that smu can perform. Use it to catch a wrong checkout or unintended selection early.
+
+A plan does not execute every shell script to predict its effects. A module may invoke a package manager, contact a service, or inspect the host when it runs. Read its implementation and trust metadata alongside the report.
+
+```bash title="Terminal"
+smu plan --json
+```
+
+<span id="sources" />
+
+## Start with sources and identity
+
+Confirm that the blueprint checkout is the one you intended to use. Check its remote, branch or revision, and destination before interpreting later findings. Configuration from a different fork can be valid and still describe the wrong setup.
+
+Distinguish the downloaded bootstrap installer from the CLI bundled in your blueprint. The bootstrap obtains the checkout; the pinned installer supplies the smu behavior you will use afterwards. Consult smu --help from that installed copy when a command differs from an example.
+
+<GuideCards links={[{"label":"Verify the first installation","href":"/docs/quick-start","icon":"terminal","description":"Set up your first machine. Choose a blueprint, review the bootstrap, verify the installed CLI, and try one module."}]} />
+
+<span id="selection" />
+
+## Check the selected modules and adapter
+
+Compare the proposed modules with the role of the target machine. A workstation collection can be inappropriate for a server even if it is available in the checkout. When using a built-in machine preset, inspect that preset and its platform requirements first.
+
+If you use a named blueprint profile, preflight that exact profile and adapter. A valid profile name does not guarantee that every selected module publishes the required adapter implementation.
+
+<SetupDiagram diagram={{"title":"Review intent before execution","actors":["Blueprint","Plan","You"],"steps":[[0,1,"Resolve host, profile, and adapter"],[1,2,"Show selection and findings"],[2,0,"Correct configuration if needed"],[2,1,"Review the revised plan"]],"caption":"Change the configuration when the intent is wrong, then generate the plan again."}} />
+
+```bash title="Terminal"
+smu provisioning-adapter preflight --adapter rcm --profile default --json
+```
+
+<span id="findings" />
+
+## Interpret conflicts and unknown state
+
+A conflict is a reason to inspect the source and destination, not to overwrite the destination immediately. Compare the content and decide which copy should be authoritative. Keep a backup before replacing a file you currently depend on.
+
+Unknown installation state means detection is incomplete. It is not equivalent to missing, and it is not proof of failure. Check the module implementation and inspect the actual package, link, or application before deciding to run it again.
+
+- Review destination files and ownership.
+- Read warnings about trust, secrets, and privilege use.
+- Check what rollback coverage actually includes.
+- Keep unresolved findings visible until you understand their consequence.
+
+<span id="execute" />
+
+## Apply only the selection you reviewed
+
+Keep the same checkout, host, and selection between review and execution. If you edit a profile, change a submodule revision, or switch machines, generate a fresh report. The previous report describes the previous inputs.
+
+Begin with a small reviewed module or a test host. Read the command summary, inspect the changed path or installed tool, and then run the relevant doctor or status check. Record what you tested before expanding the setup.
+
+<GuideCards links={[{"label":"Discover and apply modules","href":"/docs/guides/modules","icon":"folder","description":"Discover modules in your blueprint, inspect what they do, and apply the subset you need."},{"label":"Build a setup routine","href":"/docs/guides/setup-routine","icon":"up","description":"Turn a successful first installation into a small review, apply, and verify workflow you can run again with confidence."}]} />
